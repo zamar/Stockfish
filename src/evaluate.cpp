@@ -488,8 +488,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
     ei.attackedBy[Us][PAWN] = ei.pi->pawn_attacks(Us);
 
     // Init king safety tables only if we are going to use them
-    if (   pos.piece_count(Us, QUEEN)
-        && pos.non_pawn_material(Us) > QueenValueMg + PawnValueMg)
+    if (pos.non_pawn_material(Us) > QueenValueMg + PawnValueMg)
     {
         ei.kingRing[Them] = (b | (Us == WHITE ? b >> 8 : b << 8));
         b &= ei.attackedBy[Us][PAWN];
@@ -833,7 +832,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
             attackUnits += KnightCheckBonus * popcount<Max15>(b);
 
         // To index KingDangerTable[] attackUnits must be in [0, 99] range
-        attackUnits = std::min(99, std::max(0, attackUnits));
+        attackUnits = std::min(99, std::max(0, attackUnits - (pos.piece_count(Them, QUEEN) ? 0 : 10)));
 
         // Finally, extract the king danger score from the KingDangerTable[]
         // array and subtract the score from evaluation. Set also margins[]
