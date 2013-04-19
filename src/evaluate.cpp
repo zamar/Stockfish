@@ -172,7 +172,7 @@ namespace {
   const Value TrappedRookPenalty = Value(180);
 
   // Penalty for bishop with pawns on the same coloured squares
-  const Score BishopPawnsPenalty = make_score(8, 12);
+  const Score BishopPawnsPenalty = make_score(16, 24);
 
   // Penalty for a bishop on a1/h1 (a8/h8 for black) which is trapped by
   // a friendly pawn on b2/g2 (b7/g7 for black). This can obviously only
