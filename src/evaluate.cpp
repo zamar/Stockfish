@@ -694,7 +694,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
                       & ~ei.attackedBy[Them][ALL_PIECES];
 
     if (undefendedMinors)
-        score += UndefendedMinorPenalty;
+        score += UndefendedMinorPenalty * popcount<Full>(undefendedMinors);
 
     // Enemy pieces not defended by a pawn and under our attack
     weakEnemies =  pos.pieces(Them)
