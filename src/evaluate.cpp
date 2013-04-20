@@ -449,6 +449,14 @@ Value do_evaluate(const Position& pos, Value& margin) {
            sf = ScaleFactor(50);
   }
 
+  // FIXME: Move to material???
+  if (   pos.non_pawn_material(WHITE) == RookValueMg
+      && pos.non_pawn_material(BLACK) == RookValueMg
+      && sf == SCALE_FACTOR_NORMAL)
+  {
+      sf = ScaleFactor(48); // Rook endings are drawish
+  }
+
   margin = margins[pos.side_to_move()];
   Value v = interpolate(score, ei.mi->game_phase(), sf);
 
