@@ -875,6 +875,8 @@ split_point_start: // At split points actual search starts from here
           // We illogically ignore reduction condition depth >= 3*ONE_PLY for predicted depth,
           // but fixing this made program slightly weaker.
           Depth predictedDepth = newDepth - reduction<PvNode>(depth, moveCount);
+          
+          /*
           futilityValue =  ss->staticEval + ss->evalMargin + futility_margin(predictedDepth, moveCount)
                          + Gain[pos.piece_moved(move)][to_sq(move)];
 
@@ -890,6 +892,7 @@ split_point_start: // At split points actual search starts from here
               }
               continue;
           }
+          */
 
           // Prune moves with negative SEE at low depths
           if (   predictedDepth < 4 * ONE_PLY
