@@ -180,7 +180,7 @@ namespace {
   const Score TrappedBishopA1H1Penalty = make_score(100, 100);
 
   // Penalty for an undefended bishop or knight
-  const Score UndefendedMinorPenalty = make_score(25, 10);
+  const Score UndefendedMinorPenalty = make_score(12, 4);
 
   // The SpaceMask[Color] contains the area of the board which is considered
   // by the space evaluation. In the middle game, each side is given a bonus
