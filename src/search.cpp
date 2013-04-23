@@ -914,6 +914,13 @@ split_point_start: // At split points actual search starts from here
       if (!SpNode && !captureOrPromotion && playedMoveCount < 64)
           movesSearched[playedMoveCount++] = move;
 
+      bool isBadCap =    depth > 3 * ONE_PLY
+                     && !pvMove
+                     &&  captureOrPromotion
+                     && !dangerous
+                     &&  move != ttMove
+                     &&  pos.see_sign(move) < 0;
+
       // Step 14. Make the move
       pos.do_move(move, st, ci, givesCheck);
 
@@ -937,12 +944,7 @@ split_point_start: // At split points actual search starts from here
           doFullDepthSearch = (value > alpha && ss->reduction != DEPTH_ZERO);
           ss->reduction = DEPTH_ZERO;
       }
-      else if (    depth > 3 * ONE_PLY
-               && !pvMove
-               &&  captureOrPromotion
-               && !dangerous
-               &&  move != ttMove
-               &&  pos.see_sign(move) < 0)
+      else if (isBadCap)
       {
           ss->reduction = ONE_PLY;
           Depth d = newDepth - ss->reduction;
