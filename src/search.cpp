@@ -937,6 +937,23 @@ split_point_start: // At split points actual search starts from here
           doFullDepthSearch = (value > alpha && ss->reduction != DEPTH_ZERO);
           ss->reduction = DEPTH_ZERO;
       }
+      else if (    depth > 3 * ONE_PLY
+               && !pvMove
+               &&  captureOrPromotion
+               && !dangerous
+               &&  move != ttMove
+               &&  pos.see_sign(move) < 0)
+      {
+          ss->reduction = ONE_PLY;
+          Depth d = newDepth - ss->reduction;
+          if (SpNode)
+              alpha = splitPoint->alpha;
+
+          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d);
+
+          doFullDepthSearch = (value > alpha);
+          ss->reduction = DEPTH_ZERO;
+      }
       else
           doFullDepthSearch = !pvMove;
 
