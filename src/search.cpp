@@ -712,6 +712,7 @@ namespace {
     // If we have a very good capture (i.e. SEE > seeValues[captured_piece_type])
     // and a reduced search returns a value much above beta, we can (almost) safely
     // prune the previous move.
+    /*
     if (   !PvNode
         &&  depth >= 5 * ONE_PLY
         && !inCheck
@@ -740,6 +741,7 @@ namespace {
                     return value;
             }
     }
+    */
 
     // Step 10. Internal iterative deepening
     if (   depth >= (PvNode ? 5 * ONE_PLY : 8 * ONE_PLY)
