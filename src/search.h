@@ -48,6 +48,8 @@ struct Stack {
   Value evalMargin;
   int skipNullMove;
   int futilityMoveCount;
+  Value minEval;
+  Value maxEval;
 };
 
 

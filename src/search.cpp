@@ -520,6 +520,10 @@ namespace {
         goto split_point_start;
     }
 
+    if (RootNode)
+        ss->minEval = ss->maxEval = inCheck ?  qsearch<NonPV,  true, false>(pos, ss, -VALUE_INFINITE, VALUE_INFINITE, DEPTH_ZERO)
+                                            : -qsearch<NonPV, false, false>(pos, ss, -VALUE_INFINITE, VALUE_INFINITE, DEPTH_ZERO);
+
     bestValue = -VALUE_INFINITE;
     ss->currentMove = threatMove = (ss+1)->excludedMove = bestMove = MOVE_NONE;
     ss->ply = (ss-1)->ply + 1;
@@ -736,6 +740,9 @@ namespace {
             {
                 ss->currentMove = move;
                 pos.do_move(move, st, ci, pos.move_gives_check(move, ci));
+                (ss+1)->minEval = ss->maxEval;
+                (ss+1)->maxEval = ss->minEval;
+
                 value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, rdepth);
                 pos.undo_move(move);
                 if (value >= rbeta)
@@ -924,6 +931,22 @@ split_point_start: // At split points actual search starts from here
 
       // Step 14. Make the move
       pos.do_move(move, st, ci, givesCheck);
+
+      (ss+1)->minEval = ss->maxEval;
+      (ss+1)->maxEval = ss->minEval;
+
+      if (depth >= 8 * ONE_PLY)
+      {
+          Value v = inCheck ? -qsearch<NonPV,  true, false>(pos, ss, -VALUE_INFINITE, VALUE_INFINITE, DEPTH_ZERO)
+                            : -qsearch<NonPV, false, false>(pos, ss, -VALUE_INFINITE, VALUE_INFINITE, DEPTH_ZERO);
+
+
+          if (v > ss->maxEval + Value(64))
+          {
+              dangerous = true;
+              (ss+1)->minEval = v;
+          }
+      }
 
       // Step 15. Reduced depth search (LMR). If the move fails high will be
       // re-searched at full depth.
