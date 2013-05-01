@@ -145,7 +145,10 @@ void Search::init() {
 
   // Init futility move count array
   for (d = 0; d < 32; d++)
-      FutilityMoveCounts[d] = int(3.001 + 0.25 * pow(double(d), 2.0));
+      FutilityMoveCounts[d] = int(3.001 + 0.25 * pow(double(d), 2.5));
+
+  //for (d = 0; d < 32; d++)
+  //    std::cout<< d << ": " << FutilityMoveCounts[d] << "\n";
 }
 
 
