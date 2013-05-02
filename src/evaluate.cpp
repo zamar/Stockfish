@@ -776,7 +776,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
         // the number and types of the enemy's attacking pieces, the number of
         // attacked and undefended squares around our king, the square of the
         // king, and the quality of the pawn shelter.
-        attackUnits =  std::min(25, (ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them]) / 2)
+        attackUnits =  ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them] / 2
                      + 3 * (ei.kingAdjacentZoneAttacksCount[Them] + popcount<Max15>(undefended))
                      + InitKingDanger[relative_square(Us, ksq)]
                      - mg_value(score) / 32;
