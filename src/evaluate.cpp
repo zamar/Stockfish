@@ -63,6 +63,9 @@ namespace {
     // KnightAttackWeight in evaluate.cpp
     int kingAttackersWeight[COLOR_NB];
 
+    // FIXME: Document
+    Bitboard kingHiddenAttackers[COLOR_NB];
+
     // kingAdjacentZoneAttacksCount[color] is the number of attacks to squares
     // directly adjacent to the king of the given color. Pieces which attack
     // more than one square are counted multiple times. For instance, if black's
@@ -498,6 +501,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
         b &= ei.attackedBy[Us][PAWN];
         ei.kingAttackersCount[Us] = b ? popcount<Max15>(b) / 2 : 0;
         ei.kingAdjacentZoneAttacksCount[Us] = ei.kingAttackersWeight[Us] = 0;
+        ei.kingHiddenAttackers[Us] = 0ULL;
     } else
         ei.kingRing[Them] = ei.kingAttackersCount[Us] = 0;
   }
@@ -566,6 +570,11 @@ Value do_evaluate(const Position& pos, Value& margin) {
             Bitboard bb = (b & ei.attackedBy[Them][KING]);
             if (bb)
                 ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
+        }
+        else if (   (Piece == QUEEN || Piece == ROOK || Piece == BISHOP)
+                 && (PseudoAttacks[Piece][s] & ei.kingRing[Them]))
+        {
+            ei.kingHiddenAttackers[Us] |= s;
         }
 
         mob = (Piece != QUEEN ? popcount<Max15>(b & mobilityArea)
@@ -779,7 +788,8 @@ Value do_evaluate(const Position& pos, Value& margin) {
         attackUnits =  std::min(25, (ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them]) / 2)
                      + 3 * (ei.kingAdjacentZoneAttacksCount[Them] + popcount<Max15>(undefended))
                      + InitKingDanger[relative_square(Us, ksq)]
-                     - mg_value(score) / 32;
+                     - mg_value(score) / 32
+                     + popcount<Full>(ei.kingHiddenAttackers[Them]);
 
         // Analyse enemy's safe queen contact checks. First find undefended
         // squares around the king attacked by enemy queen...
