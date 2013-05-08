@@ -207,7 +207,7 @@ void Search::think() {
 
   if (!Options["UCI_AnalyseMode"])
   {
-      int cf = 128;
+      int cf = 96;
       cf = cf * Material::game_phase(RootPos) / PHASE_MIDGAME; // Scale down with phase
       DrawValue[ RootColor] = VALUE_DRAW - Value(cf);
       DrawValue[~RootColor] = VALUE_DRAW + Value(cf);
