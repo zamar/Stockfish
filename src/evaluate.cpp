@@ -739,7 +739,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
 
     const Color Them = (Us == WHITE ? BLACK : WHITE);
 
-    Bitboard undefended, b, b1, b2, safe;
+    Bitboard undefended, b, b1, b2, b3, safe;
     int attackUnits;
     const Square ksq = pos.king_square(Us);
 
@@ -825,6 +825,40 @@ Value do_evaluate(const Position& pos, Value& margin) {
         b = pos.attacks_from<KNIGHT>(ksq) & ei.attackedBy[Them][KNIGHT] & safe;
         if (b)
             attackUnits += KnightCheckBonus * popcount<Max15>(b);
+
+        // FIXME: Document and cleanup
+        b3 = PseudoAttacks[QUEEN][ksq] & pos.pieces(Them, QUEEN);
+
+        while(b3)
+        {
+            Square sq = pop_lsb(&b3);
+            
+            if (   !more_than_one(BetweenBB[sq][ksq] & pos.pieces())
+                && !(BetweenBB[sq][ksq] & pos.pieces(Us)))
+                attackUnits += QueenCheckBonus;
+        }
+
+        b3 = PseudoAttacks[ROOK][ksq] & pos.pieces(Them, ROOK);
+
+        while(b3)
+        {
+            Square sq = pop_lsb(&b3);
+            
+            if (   !more_than_one(BetweenBB[sq][ksq] & pos.pieces())
+                && !(BetweenBB[sq][ksq] & pos.pieces(Us)))
+                attackUnits += RookCheckBonus;
+        }
+
+        b3 = PseudoAttacks[BISHOP][ksq] & pos.pieces(Them, BISHOP);
+
+        while(b3)
+        {
+            Square sq = pop_lsb(&b3);
+            
+            if (   !more_than_one(BetweenBB[sq][ksq] & pos.pieces())
+                && !(BetweenBB[sq][ksq] & pos.pieces(Us)))
+                attackUnits += BishopCheckBonus;
+        }
 
         // To index KingDangerTable[] attackUnits must be in [0, 99] range
         attackUnits = std::min(99, std::max(0, attackUnits));
