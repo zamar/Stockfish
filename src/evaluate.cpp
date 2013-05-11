@@ -834,7 +834,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
             Square sq = pop_lsb(&b3);
             
             if (   !more_than_one(BetweenBB[sq][ksq] & pos.pieces())
-                && !(BetweenBB[sq][ksq] & pos.pieces(Us)))
+                && !(BetweenBB[sq][ksq] & (pos.pieces(Us) | pos.pieces(Them, PAWN))))
                 attackUnits += QueenCheckBonus;
         }
 
@@ -845,7 +845,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
             Square sq = pop_lsb(&b3);
             
             if (   !more_than_one(BetweenBB[sq][ksq] & pos.pieces())
-                && !(BetweenBB[sq][ksq] & pos.pieces(Us)))
+                && !(BetweenBB[sq][ksq] & (pos.pieces(Us) | pos.pieces(Them, PAWN))))
                 attackUnits += RookCheckBonus;
         }
 
@@ -856,7 +856,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
             Square sq = pop_lsb(&b3);
             
             if (   !more_than_one(BetweenBB[sq][ksq] & pos.pieces())
-                && !(BetweenBB[sq][ksq] & pos.pieces(Us)))
+                && !(BetweenBB[sq][ksq] & (pos.pieces(Us) | pos.pieces(Them, PAWN))))
                 attackUnits += BishopCheckBonus;
         }
 
