@@ -52,6 +52,27 @@ using namespace Search;
 
 namespace {
 
+  // FIXME: Document me:
+
+  const int HistoryPruneLimit[16] = {0,
+                                     0, 
+                                     55000, // 1.0 ply
+                                     50000, // 1.5 ply
+                                     45000, // 2.0 ply
+                                     40000, // 2.5 ply
+                                     35000, // 3.0 ply
+                                     30000, // 3.5 ply
+                                     25000, // 4.0 ply
+                                     20000, // 4.5 ply
+                                     15000, // 5.0 ply
+                                     12000, // 5.5 ply
+                                      9000, // 6.0 ply
+                                      6000, // 6.5 ply
+                                      4000, // 7.0 ply
+                                      2000  // 7.5 ply 
+                                     };
+                                      
+
   // Set to true to force running with one thread. Used for debugging
   const bool FakeSplit = false;
 
@@ -868,9 +889,9 @@ split_point_start: // At split points actual search starts from here
        /* &&  move != ttMove Already implicit in the next condition */
           &&  bestValue > VALUE_MATED_IN_MAX_PLY)
       {
-          // Move count based pruning
-          if (   depth < 16 * ONE_PLY
-              && moveCount >= FutilityMoveCounts[depth]
+          // History pruning
+          if (    depth < 8 * ONE_PLY
+              &&  Hist2.get(pos.piece_moved(move), to_sq(move)) < HistoryPruneLimit[depth]
               && (!threatMove || !refutes(pos, move, threatMove)))
           {
               if (SpNode)

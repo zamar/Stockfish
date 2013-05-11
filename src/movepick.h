@@ -64,7 +64,7 @@ typedef Stats<true> Gains;
 struct History2 {
 
   void clear() { memset(total, 0, sizeof(total)); memset(success, 0, sizeof(success)); }
-  int get(Piece p, Square s) { return success[p][s] * 65536 / total[p][s]; }
+  int get(Piece p, Square s) { return (success[p][s] + 1) * 65536 / (total[p][s] + 1); }
   void update(Piece p, Square to, bool failHigh) {
   
       total[p][to] += 1;
