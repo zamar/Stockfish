@@ -61,6 +61,25 @@ private:
 typedef Stats<false> History;
 typedef Stats<true> Gains;
 
+struct History2 {
+
+  void clear() { memset(total, 0, sizeof(total)); memset(success, 0, sizeof(success)); }
+  int get(Piece p, Square s) { return success[p][s] * 65536 / total[p][s]; }
+  void update(Piece p, Square to, bool failHigh) {
+  
+      total[p][to] += 1;
+
+      if (failHigh)
+          success[p][to] += 1;
+  }
+
+private:
+  int64_t total[PIECE_NB][SQUARE_NB];
+  int64_t success[PIECE_NB][SQUARE_NB];
+};
+
+
+
 
 /// MovePicker class is used to pick one pseudo legal move at a time from the
 /// current position. The most important method is next_move(), which returns a

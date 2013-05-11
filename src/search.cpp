@@ -87,6 +87,7 @@ namespace {
   int BestMoveChanges;
   Value DrawValue[COLOR_NB];
   History Hist;
+  History2 Hist2;
   Gains Gain;
 
   template <NodeType NT>
@@ -304,6 +305,7 @@ namespace {
     ss->currentMove = MOVE_NULL; // Hack to skip update gains
     TT.new_search();
     Hist.clear();
+    Hist2.clear();
     Gain.clear();
 
     PVSize = Options["MultiPV"];
@@ -1090,12 +1092,14 @@ split_point_start: // At split points actual search starts from here
             // Increase history value of the cut-off move
             Value bonus = Value(int(depth) * int(depth));
             Hist.update(pos.piece_moved(bestMove), to_sq(bestMove), bonus);
+            Hist2.update(pos.piece_moved(bestMove), to_sq(bestMove), true);
 
             // Decrease history of all the other played non-capture moves
             for (int i = 0; i < playedMoveCount - 1; i++)
             {
                 Move m = movesSearched[i];
                 Hist.update(pos.piece_moved(m), to_sq(m), -bonus);
+                Hist2.update(pos.piece_moved(m), to_sq(m), false);
             }
         }
     }
