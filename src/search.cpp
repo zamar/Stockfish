@@ -889,8 +889,9 @@ split_point_start: // At split points actual search starts from here
        /* &&  move != ttMove Already implicit in the next condition */
           &&  bestValue > VALUE_MATED_IN_MAX_PLY)
       {
-          // History pruning
+          // Joint move count and history pruning
           if (    depth < 8 * ONE_PLY
+              &&  moveCount >= FutilityMoveCounts[depth]
               &&  Hist2.get(pos.piece_moved(move), to_sq(move)) < HistoryPruneLimit[depth]
               && (!threatMove || !refutes(pos, move, threatMove)))
           {
