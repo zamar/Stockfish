@@ -90,7 +90,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const History& h, c
       killers[0].move = ss->killers[0];
       killers[1].move = ss->killers[1];
       Square prevSq = to_sq((ss-1)->currentMove);
-      killers[2].move = r[pos.piece_on(prevSq)][prevSq];
+      killers[2].move = r[pos.piece_on(prevSq)][prevSq].move1;
+      killers[3].move = r[pos.piece_on(prevSq)][prevSq].move2;
 
       // Consider sligtly negative captures as good if at low depth and far from beta
       if (ss && ss->staticEval < beta - PawnValueMg && d < 3 * ONE_PLY)
@@ -239,7 +240,7 @@ void MovePicker::generate_next() {
 
   case KILLERS_S1:
       cur = killers;
-      end = cur + 3;
+      end = cur + 4;
       return;
 
   case QUIETS_1_S1:
@@ -332,7 +333,8 @@ Move MovePicker::next_move<false>() {
           if (   move != ttMove
               && move != killers[0].move
               && move != killers[1].move
-              && move != killers[2].move)
+              && move != killers[2].move
+              && move != killers[3].move)
               return move;
           break;
 

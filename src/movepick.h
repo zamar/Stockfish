@@ -28,6 +28,13 @@
 #include "search.h"
 #include "types.h"
 
+// FIXME: Document and cleanup
+
+struct refutInfo {
+
+    Move move1;
+    Move move2;
+};
 
 /// The Stats struct stores moves statistics. According to the template parameter
 /// the class can store History, Gains and Refutations statistics. History records
@@ -46,7 +53,16 @@ struct Stats {
   const T* operator[](Piece p) const { return &table[p][0]; }
   void clear() { memset(table, 0, sizeof(table)); }
 
-  void update(Piece p, Square to, Move m) { table[p][to] = m; }
+  void update(Piece p, Square to, Move m) { 
+     
+     if (m != table[p][to].move1)
+     {
+         table[p][to].move2 = table[p][to].move1;
+         table[p][to].move1 = m;
+     }
+
+  }
+
   void update(Piece p, Square to, Value v) {
 
     if (Gain)
@@ -62,7 +78,7 @@ private:
 
 typedef Stats<true, Value> Gains;
 typedef Stats<false, Value> History;
-typedef Stats<false, Move> Refutations;
+typedef Stats<false, refutInfo> Refutations;
 
 
 /// MovePicker class is used to pick one pseudo legal move at a time from the
@@ -91,7 +107,7 @@ private:
   Search::Stack* ss;
   Depth depth;
   Move ttMove;
-  MoveStack killers[3];
+  MoveStack killers[4];
   Square recaptureSquare;
   int captureThreshold, phase;
   MoveStack *cur, *end, *endQuiets, *endBadCaptures;
