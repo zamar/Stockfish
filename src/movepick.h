@@ -37,34 +37,36 @@
 /// Countermoves store the move that refute a previous one. Entries are stored
 /// according only to moving piece and destination square, hence two moves with
 /// different origin but same destination and piece will be considered identical.
+
 template<bool Gain, typename T>
 struct Stats {
 
   static const Value Max = Value(2000);
 
-  const T* operator[](Piece p) const { return table[p]; }
+  //const T* operator[](Piece p) const { return &table[p][0][0]; }
   void clear() { memset(table, 0, sizeof(table)); }
 
-  void update(Piece p, Square to, Move m) {
+  void update(Piece p, Square from, Square to, Move m) {
 
-    if (m == table[p][to].first)
+    if (m == table[p][from][to].first)
         return;
 
-    table[p][to].second = table[p][to].first;
-    table[p][to].first = m;
+    table[p][from][to].second = table[p][from][to].first;
+    table[p][from][to].first = m;
   }
 
-  void update(Piece p, Square to, Value v) {
+  void update(Piece p, Square from, Square to, Value v) {
 
     if (Gain)
-        table[p][to] = std::max(v, table[p][to] - 1);
+        table[p][from][to] = std::max(v, table[p][from][to] - 1);
 
-    else if (abs(table[p][to] + v) < Max)
-        table[p][to] +=  v;
+    else if (abs(table[p][from][to] + v) < Max)
+        table[p][from][to] +=  v;
   }
 
-private:
-  T table[PIECE_NB][SQUARE_NB];
+public:
+//private:
+  T table[PIECE_NB][SQUARE_NB][SQUARE_NB];
 };
 
 typedef Stats< true, Value> GainsStats;

@@ -622,8 +622,9 @@ namespace {
         && !pos.captured_piece_type()
         &&  type_of(move) == NORMAL)
     {
+        Square from = from_sq(move);
         Square to = to_sq(move);
-        Gains.update(pos.piece_on(to), to, -(ss-1)->staticEval - ss->staticEval);
+        Gains.update(pos.piece_on(to), from, to, -(ss-1)->staticEval - ss->staticEval);
     }
 
     // Step 6. Razoring (is omitted in PV nodes)
@@ -884,7 +885,7 @@ split_point_start: // At split points actual search starts from here
           // but fixing this made program slightly weaker.
           Depth predictedDepth = newDepth - reduction<PvNode>(depth, moveCount);
           futilityValue =  ss->staticEval + ss->evalMargin + futility_margin(predictedDepth, moveCount)
-                         + Gains[pos.piece_moved(move)][to_sq(move)];
+                         + Gains.table[pos.piece_moved(move)][from_sq(move)][to_sq(move)];
 
           if (futilityValue < beta)
           {
@@ -1091,18 +1092,19 @@ split_point_start: // At split points actual search starts from here
 
             // Increase history value of the cut-off move
             Value bonus = Value(int(depth) * int(depth));
-            History.update(pos.piece_moved(bestMove), to_sq(bestMove), bonus);
+            History.update(pos.piece_moved(bestMove), from_sq(bestMove), to_sq(bestMove), bonus);
             if (is_ok((ss-1)->currentMove))
             {
-                Square prevSq = to_sq((ss-1)->currentMove);
-                Countermoves.update(pos.piece_on(prevSq), prevSq, bestMove);
+                Square prevFromSq = from_sq((ss-1)->currentMove);
+                Square prevToSq = to_sq((ss-1)->currentMove);
+                Countermoves.update(pos.piece_on(prevToSq), prevFromSq, prevToSq, bestMove);
             }
 
             // Decrease history of all the other played non-capture moves
             for (int i = 0; i < playedMoveCount - 1; i++)
             {
                 Move m = movesSearched[i];
-                History.update(pos.piece_moved(m), to_sq(m), -bonus);
+                History.update(pos.piece_moved(m), from_sq(m), to_sq(m), -bonus);
             }
         }
     }

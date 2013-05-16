@@ -89,9 +89,10 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const HistoryStats&
 
       killers[0].move = ss->killers[0];
       killers[1].move = ss->killers[1];
-      Square prevSq = to_sq((ss-1)->currentMove);
-      killers[2].move = cm[pos.piece_on(prevSq)][prevSq].first;
-      killers[3].move = cm[pos.piece_on(prevSq)][prevSq].second;
+      Square prevFromSq = from_sq((ss-1)->currentMove);
+      Square prevToSq = to_sq((ss-1)->currentMove);
+      killers[2].move = cm.table[pos.piece_on(prevToSq)][prevFromSq][prevToSq].first;
+      killers[3].move = cm.table[pos.piece_on(prevToSq)][prevFromSq][prevToSq].second;
 
       // Consider sligtly negative captures as good if at low depth and far from beta
       if (ss && ss->staticEval < beta - PawnValueMg && d < 3 * ONE_PLY)
@@ -197,7 +198,7 @@ void MovePicker::score<QUIETS>() {
   for (MoveStack* it = moves; it != end; ++it)
   {
       m = it->move;
-      it->score = history[pos.piece_moved(m)][to_sq(m)];
+      it->score = history.table[pos.piece_moved(m)][from_sq(m)][to_sq(m)];
   }
 }
 
@@ -219,7 +220,7 @@ void MovePicker::score<EVASIONS>() {
           it->score =  PieceValue[MG][pos.piece_on(to_sq(m))]
                      - type_of(pos.piece_moved(m)) + HistoryStats::Max;
       else
-          it->score = history[pos.piece_moved(m)][to_sq(m)];
+          it->score = history.table[pos.piece_moved(m)][from_sq(m)][to_sq(m)];
   }
 }
 
