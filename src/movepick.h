@@ -107,7 +107,7 @@ private:
   Search::Stack* ss;
   Depth depth;
   Move ttMove;
-  MoveStack killers[4];
+  MoveStack killers[5];
   Square recaptureSquare;
   int captureThreshold, phase;
   MoveStack *cur, *end, *endQuiets, *endBadCaptures;
