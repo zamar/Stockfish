@@ -927,6 +927,10 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
   // Update the key with the final value
   st->key = k;
 
+  // FIXME: Document: Keys for Counter moves
+  st->prev2MoveKey = st->prevMoveKey ^ Zobrist::psq[us][pt][to];
+  st->prevMoveKey  = Zobrist::psq[us][pt][to];
+
   // Update checkers bitboard, piece must be already moved
   st->checkersBB = 0;
 

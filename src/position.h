@@ -55,6 +55,9 @@ struct StateInfo {
   Score psqScore;
   Square epSquare;
 
+  Key prevMoveKey;
+  Key prev2MoveKey;
+
   Key key;
   Bitboard checkersBB;
   PieceType capturedType;
@@ -166,6 +169,8 @@ public:
   Key exclusion_key() const;
   Key pawn_key() const;
   Key material_key() const;
+
+  Key counter_move_key() const;
 
   // Incremental piece-square evaluation
   Score psq_score() const;
@@ -356,6 +361,10 @@ inline Key Position::pawn_key() const {
 
 inline Key Position::material_key() const {
   return st->materialKey;
+}
+
+inline Key Position::counter_move_key() const {
+  return st->prev2MoveKey ^ (sideToMove == BLACK ? Zobrist::side : 0ULL);
 }
 
 inline Score Position::psq_delta(Piece p, Square from, Square to) const {

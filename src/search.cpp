@@ -89,6 +89,7 @@ namespace {
   HistoryStats History;
   GainsStats Gains;
   CountermovesStats Countermoves;
+  CounterTable CTable;
 
   template <NodeType NT>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth);
@@ -498,7 +499,7 @@ namespace {
     const TTEntry *tte;
     SplitPoint* splitPoint;
     Key posKey;
-    Move ttMove, move, excludedMove, bestMove, threatMove;
+    Move ttMove, move, excludedMove, bestMove, threatMove, countermoves[3];
     Depth ext, newDepth;
     Value bestValue, value, ttValue;
     Value eval, nullValue, futilityValue;
@@ -508,6 +509,7 @@ namespace {
 
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
+    countermoves[0] = countermoves[1] = countermoves[2] = MOVE_NONE; 
     moveCount = playedMoveCount = 0;
     inCheck = pos.checkers();
 
@@ -766,7 +768,17 @@ namespace {
 
 split_point_start: // At split points actual search starts from here
 
-    MovePicker mp(pos, ttMove, depth, History, Countermoves, ss, PvNode ? -VALUE_INFINITE : beta);
+    Square prevSq = to_sq((ss-1)->currentMove);
+    countermoves[0] = Countermoves[pos.piece_on(prevSq)][prevSq].first;
+    countermoves[1] = Countermoves[pos.piece_on(prevSq)][prevSq].second; 
+
+    Key cmKey       = pos.counter_move_key();
+    CMEntry* cmEntry = CTable[cmKey];
+
+    if (cmEntry->key == cmKey) 
+        countermoves[2] = cmEntry->move;
+
+    MovePicker mp(pos, ttMove, depth, History, countermoves, ss, PvNode ? -VALUE_INFINITE : beta);
     CheckInfo ci(pos);
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     singularExtensionNode =   !RootNode
@@ -1094,8 +1106,10 @@ split_point_start: // At split points actual search starts from here
             History.update(pos.piece_moved(bestMove), to_sq(bestMove), bonus);
             if (is_ok((ss-1)->currentMove))
             {
-                Square prevSq = to_sq((ss-1)->currentMove);
+                //Square prevSq = to_sq((ss-1)->currentMove);
                 Countermoves.update(pos.piece_on(prevSq), prevSq, bestMove);
+                cmEntry->key = cmKey;
+                cmEntry->move = bestMove;
             }
 
             // Decrease history of all the other played non-capture moves

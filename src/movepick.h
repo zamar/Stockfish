@@ -71,6 +71,13 @@ typedef Stats< true, Value> GainsStats;
 typedef Stats<false, Value> HistoryStats;
 typedef Stats<false, std::pair<Move, Move> > CountermovesStats;
 
+struct CMEntry
+{
+    Key key;
+    Move move;
+};
+
+typedef HashTable<CMEntry, 16384> CounterTable;
 
 /// MovePicker class is used to pick one pseudo legal move at a time from the
 /// current position. The most important method is next_move(), which returns a
@@ -87,7 +94,7 @@ public:
   MovePicker(const Position&, Move, Depth, const HistoryStats&, Square);
   MovePicker(const Position&, Move, const HistoryStats&, PieceType);
   MovePicker(const Position&, Move, Depth, const HistoryStats&,
-             const CountermovesStats&, Search::Stack*, Value);
+             Move*, Search::Stack*, Value);
 
   template<bool SpNode> Move next_move();
 
