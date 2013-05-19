@@ -32,6 +32,13 @@ using std::string;
 
 UCI::OptionsMap Options; // Global object
 
+#if defined(TUNE_CONSTANTS)
+
+extern TUNABLE_CONST int MgPassedPawnBonus[6];
+extern TUNABLE_CONST int EgPassedPawnBonus[6];
+
+#endif
+
 namespace UCI {
 
 /// 'On change' actions, triggered by an option's value change
@@ -89,6 +96,12 @@ void init(OptionsMap& o) {
   o["Slow Mover"]                  = Option(100, 10, 1000);
   o["UCI_Chess960"]                = Option(false);
   o["UCI_AnalyseMode"]             = Option(false, on_eval);
+
+#if defined(TUNE_CONSTANTS)
+  o["Passed_Rank5"]             = Option(110, -1000, 1000); // 120, 100
+  o["Passed_Rank6"]             = Option(205, -1000, 1000); // 240, 170
+  o["Passed_Rank7"]             = Option(330, -1000, 1000); // 400, 260
+#endif
 }
 
 
@@ -168,6 +181,13 @@ Option& Option::operator=(const string& v) {
 
 void read_tunable_constants_from_uci(OptionsMap& o)
 {
+    MgPassedPawnBonus[3] = o["Passed_Rank5"] + 10; 
+    MgPassedPawnBonus[4] = o["Passed_Rank6"] + 35; 
+    MgPassedPawnBonus[5] = o["Passed_Rank7"] + 70; 
+
+    EgPassedPawnBonus[3] = o["Passed_Rank5"] - 10; 
+    EgPassedPawnBonus[4] = o["Passed_Rank6"] - 35; 
+    EgPassedPawnBonus[5] = o["Passed_Rank7"] - 70; 
 }
 
 #endif

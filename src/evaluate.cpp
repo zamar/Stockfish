@@ -29,6 +29,9 @@
 #include "thread.h"
 #include "ucioption.h"
 
+TUNABLE_CONST int MgPassedPawnBonus[6] = { 0 ,  0, 40, 120, 240, 400 };
+TUNABLE_CONST int EgPassedPawnBonus[6] = { 10, 20, 50, 100, 170, 260 };
+
 namespace {
 
   // Struct EvalInfo contains various information computed and collected
@@ -832,8 +835,8 @@ Value do_evaluate(const Position& pos, Value& margin) {
         int rr = r * (r - 1);
 
         // Base bonus based on rank
-        Value mbonus = Value(20 * rr);
-        Value ebonus = Value(10 * (rr + r + 1));
+        Value mbonus = Value(MgPassedPawnBonus[r]);
+        Value ebonus = Value(EgPassedPawnBonus[r]);
 
         if (rr)
         {
