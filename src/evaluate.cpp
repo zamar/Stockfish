@@ -429,10 +429,6 @@ Value do_evaluate(const Position& pos, Value& margin) {
           bool one_pawn = (pos.piece_count(WHITE, PAWN) + pos.piece_count(BLACK, PAWN) == 1);
           sf = one_pawn ? ScaleFactor(8) : ScaleFactor(32);
       }
-      else
-          // Endgame with opposite-colored bishops, but also other pieces. Still
-          // a bit drawish, but not as drawish as with only the two bishops.
-           sf = ScaleFactor(50);
   }
 
   margin = margins[pos.side_to_move()];
