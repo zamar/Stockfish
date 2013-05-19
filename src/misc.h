@@ -51,7 +51,8 @@ namespace Time {
 
 template<class Entry, int Size>
 struct HashTable {
-  HashTable() : e(Size, Entry()) {}
+  HashTable() { clear(); }
+  void clear() { e.clear(); e.insert(e.begin(), Size, Entry()); }
   Entry* operator[](Key k) { return &e[(uint32_t)k & (Size - 1)]; }
 
 private:

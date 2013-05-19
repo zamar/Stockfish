@@ -62,6 +62,10 @@ private:
 void init(OptionsMap&);
 void loop(const std::string&);
 
+#if defined(TUNE_CONSTANTS)
+extern void read_tunable_constants_from_uci(OptionsMap&);
+#endif
+
 } // namespace UCI
 
 extern UCI::OptionsMap Options;

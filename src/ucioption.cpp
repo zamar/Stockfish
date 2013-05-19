@@ -161,4 +161,12 @@ Option& Option::operator=(const string& v) {
   return *this;
 }
 
+#if defined(TUNE_CONSTANTS)
+
+void read_tunable_constants_from_uci(OptionsMap& o)
+{
+}
+
+#endif
+
 } // namespace UCI

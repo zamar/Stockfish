@@ -52,6 +52,7 @@ OBJS = benchmark.o bitbase.o bitboard.o book.o endgame.o evaluate.o main.o \
 #
 # debug = yes/no      --- -DNDEBUG         --- Enable/Disable debug mode
 # optimize = yes/no   --- (-O3/-fast etc.) --- Enable/Disable optimizations
+# tune = yes/no       --- -DTUNE_CONSTANTS --- Enable special parameter tuning mode
 # arch = (name)       --- (-arch)          --- Target architecture
 # os = (name)         ---                  --- Target operating system
 # bits = 64/32        --- -DIS_64BIT       --- 64-/32-bit operating system
@@ -68,6 +69,7 @@ OBJS = benchmark.o bitbase.o bitboard.o book.o endgame.o evaluate.o main.o \
 ### 2.1. General
 debug = no
 optimize = yes
+tune = yes
 
 ### 2.2 Architecture specific
 
@@ -371,6 +373,12 @@ ifeq ($(comp),gcc)
 	endif
 endif
 
+### 3.11 Tuning
+
+ifeq ($(tune),yes)
+	CXXFLAGS += -DTUNE_CONSTANTS
+endif
+
 ### ==========================================================================
 ### Section 4. Public targets
 ### ==========================================================================
@@ -484,6 +492,7 @@ config-sanity:
 	@echo "Config:"
 	@echo "debug: '$(debug)'"
 	@echo "optimize: '$(optimize)'"
+	@echo "tune: '$(tune)'"
 	@echo "arch: '$(arch)'"
 	@echo "os: '$(os)'"
 	@echo "bits: '$(bits)'"
@@ -501,6 +510,7 @@ config-sanity:
 	@echo ""
 	@test "$(debug)" = "yes" || test "$(debug)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
+	@test "$(tune)" = "yes" || test "$(tune)" = "no" 
 	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
 	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || test "$(arch)" = "armv7"
 	@test "$(os)" = "any" || test "$(os)" = "osx"
