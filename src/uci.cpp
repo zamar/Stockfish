@@ -103,7 +103,16 @@ void UCI::loop(const string& args) {
                     << "\n"       << Options
                     << "\nuciok"  << sync_endl;
 
-      else if (token == "ucinewgame") TT.clear();
+      else if (token == "ucinewgame") 
+      { 
+          TT.clear();
+
+#if defined(TUNE_CONSTANTS)
+          Threads.clear_cached_tables();
+          UCI::read_tunable_constants_from_uci(Options); 
+#endif
+
+      }
       else if (token == "go")         go(pos, is);
       else if (token == "position")   set_position(pos, is);
       else if (token == "setoption")  set_option(is);

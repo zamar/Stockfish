@@ -71,6 +71,12 @@
 #  define FORCE_INLINE  inline
 #endif
 
+#if defined(TUNE_CONSTANTS)
+#  define TUNABLE_CONST 
+#else
+#  define TUNABLE_CONST static const
+#endif
+
 #if defined(USE_POPCNT)
 const bool HasPopCnt = true;
 #else

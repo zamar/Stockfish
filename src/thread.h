@@ -153,6 +153,7 @@ struct ThreadPool : public std::vector<Thread*> {
   void wait_for_think_finished();
   void start_thinking(const Position&, const Search::LimitsType&,
                       const std::vector<Move>&, Search::StateStackPtr&);
+  void clear_cached_tables() { for(size_t i = 0; i < (*this).size(); i++) { (*this)[i]->materialTable.clear(); (*this)[i]->pawnsTable.clear(); } }
 
   bool sleepWhileIdle;
   Depth minimumSplitDepth;
