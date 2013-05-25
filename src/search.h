@@ -48,6 +48,7 @@ struct Stack {
   Value evalMargin;
   int skipNullMove;
   int futilityMoveCount;
+  bool isBadCapture;
 };
 
 

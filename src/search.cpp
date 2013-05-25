@@ -530,6 +530,7 @@ namespace {
     ss->currentMove = threatMove = (ss+1)->excludedMove = bestMove = MOVE_NONE;
     ss->ply = (ss-1)->ply + 1;
     ss->futilityMoveCount = 0;
+    ss->isBadCapture = false;
     (ss+1)->skipNullMove = false; (ss+1)->reduction = DEPTH_ZERO;
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
 
@@ -722,6 +723,7 @@ namespace {
     // prune the previous move.
     if (   !PvNode
         &&  depth >= 5 * ONE_PLY
+        && (ss-1)->isBadCapture
         && !inCheck
         && !ss->skipNullMove
         &&  excludedMove == MOVE_NONE
@@ -932,6 +934,12 @@ split_point_start: // At split points actual search starts from here
       if (!SpNode && !captureOrPromotion && playedMoveCount < 64)
           movesSearched[playedMoveCount++] = move;
 
+      ss->isBadCapture =     depth >= 5 * ONE_PLY
+                         &&  captureOrPromotion
+                         && !dangerous
+                         &&  move != ttMove
+                         &&  pos.see_sign(move) < 0;
+
       // Step 14. Make the move
       pos.do_move(move, st, ci, givesCheck);
 
@@ -985,6 +993,8 @@ split_point_start: // At split points actual search starts from here
       pos.undo_move(move);
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
+
+      ss->isBadCapture = false;
 
       // Step 18. Check for new best move
       if (SpNode)
