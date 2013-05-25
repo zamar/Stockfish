@@ -768,7 +768,8 @@ split_point_start: // At split points actual search starts from here
 
     Square prevMoveSq = to_sq((ss-1)->currentMove);
     Move countermoves[] = { Countermoves[pos.piece_on(prevMoveSq)][prevMoveSq].first,
-                            Countermoves[pos.piece_on(prevMoveSq)][prevMoveSq].second };
+                            Countermoves[pos.piece_on(prevMoveSq)][prevMoveSq].second,
+                            Countermoves[pos.piece_on(prevMoveSq)][prevMoveSq].third };
 
     MovePicker mp(pos, ttMove, depth, History, countermoves, ss, PvNode ? -VALUE_INFINITE : beta);
     CheckInfo ci(pos);
@@ -946,7 +947,7 @@ split_point_start: // At split points actual search starts from here
           &&  move != ss->killers[1])
       {
           ss->reduction = reduction<PvNode>(depth, moveCount);
-          if (move == countermoves[0] || move == countermoves[1])
+          if (move == countermoves[0] || move == countermoves[1] || move == countermoves[2])
               ss->reduction = std::max(DEPTH_ZERO, ss->reduction-ONE_PLY);
 
           Depth d = std::max(newDepth - ss->reduction, ONE_PLY);

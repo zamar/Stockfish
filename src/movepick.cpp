@@ -239,15 +239,18 @@ void MovePicker::generate_next() {
 
       killers[0].move = ss->killers[0];
       killers[1].move = ss->killers[1];
-      killers[2].move = killers[3].move = MOVE_NONE;
+      killers[2].move = killers[3].move = killers[4].move = MOVE_NONE;
 
       // Be sure countermoves are different from killers
-      for (int i = 0; i < 2; i++)
+      for (int i = 0; i < 3; i++)
           if (countermoves[i] != cur->move && countermoves[i] != (cur+1)->move)
               (end++)->move = countermoves[i];
 
-      if (countermoves[1] && countermoves[1] == countermoves[0]) // Due to SMP races
+      if (killers[3].move && killers[3].move == killers[2].move) // Due to SMP races
           killers[3].move = MOVE_NONE;
+
+      if (killers[4].move && (killers[4].move == killers[3].move || killers[4].move == killers[2].move)) // Due to SMP races
+          killers[4].move = MOVE_NONE;
 
       return;
 

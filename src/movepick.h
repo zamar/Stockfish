@@ -37,6 +37,14 @@
 /// Countermoves store the move that refute a previous one. Entries are stored
 /// according only to moving piece and destination square, hence two moves with
 /// different origin but same destination and piece will be considered identical.
+
+struct foo
+{
+    Move first;
+    Move second;
+    Move third;
+};
+
 template<bool Gain, typename T>
 struct Stats {
 
@@ -50,6 +58,7 @@ struct Stats {
     if (m == table[p][to].first)
         return;
 
+    table[p][to].third  = table[p][to].second;
     table[p][to].second = table[p][to].first;
     table[p][to].first = m;
   }
@@ -69,7 +78,7 @@ private:
 
 typedef Stats< true, Value> GainsStats;
 typedef Stats<false, Value> HistoryStats;
-typedef Stats<false, std::pair<Move, Move> > CountermovesStats;
+typedef Stats<false, foo > CountermovesStats;
 
 
 /// MovePicker class is used to pick one pseudo legal move at a time from the
@@ -100,7 +109,7 @@ private:
   Move* countermoves;
   Depth depth;
   Move ttMove;
-  MoveStack killers[4];
+  MoveStack killers[5];
   Square recaptureSquare;
   int captureThreshold, phase;
   MoveStack *cur, *end, *endQuiets, *endBadCaptures;
