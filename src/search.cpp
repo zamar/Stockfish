@@ -932,18 +932,21 @@ split_point_start: // At split points actual search starts from here
       if (!SpNode && !captureOrPromotion && playedMoveCount < 64)
           movesSearched[playedMoveCount++] = move;
 
-      // Step 14. Make the move
-      pos.do_move(move, st, ci, givesCheck);
-
-      // Step 15. Reduced depth search (LMR). If the move fails high will be
-      // re-searched at full depth.
-      if (    depth > 3 * ONE_PLY
+      bool reduce = depth > 3 * ONE_PLY
           && !pvMove
           && !captureOrPromotion
           && !dangerous
           &&  move != ttMove
           &&  move != ss->killers[0]
-          &&  move != ss->killers[1])
+          &&  move != ss->killers[1]
+          &&  pos.see_sign(move) >= 0;
+
+      // Step 14. Make the move
+      pos.do_move(move, st, ci, givesCheck);
+
+      // Step 15. Reduced depth search (LMR). If the move fails high will be
+      // re-searched at full depth.
+      if (reduce)
       {
           ss->reduction = reduction<PvNode>(depth, moveCount);
           if (move == countermoves[0] || move == countermoves[1])
