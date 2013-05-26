@@ -343,7 +343,13 @@ Move MovePicker::next_move<false>() {
               && move != killers[1].move
               && move != killers[2].move
               && move != killers[3].move)
-              return move;
+          {
+              if (depth < 4 * ONE_PLY || pos.see_sign(move) >= captureThreshold)
+                  return move;
+
+              // Losing quiet, move it to the tail of the array
+              (endBadCaptures--)->move = move;
+          }
           break;
 
       case BAD_CAPTURES_S1:
