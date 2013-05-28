@@ -297,11 +297,11 @@ namespace {
 
     Stack ss[MAX_PLY_PLUS_2];
     int depth, prevBestMoveChanges;
-    Value bestValue, alpha, beta, delta;
+    Value bestValue, alpha, beta, highDelta, lowDelta;
 
     memset(ss, 0, 4 * sizeof(Stack));
     depth = BestMoveChanges = 0;
-    bestValue = delta = -VALUE_INFINITE;
+    bestValue = highDelta = lowDelta = -VALUE_INFINITE;
     ss->currentMove = MOVE_NULL; // Hack to skip update gains
     TT.new_search();
     History.clear();
@@ -335,9 +335,9 @@ namespace {
             // Set aspiration window default width
             if (depth >= 5 && abs(RootMoves[PVIdx].prevScore) < VALUE_KNOWN_WIN)
             {
-                delta = Value(16);
-                alpha = RootMoves[PVIdx].prevScore - delta;
-                beta  = RootMoves[PVIdx].prevScore + delta;
+                highDelta = lowDelta = Value(16);
+                alpha = RootMoves[PVIdx].prevScore - lowDelta;
+                beta  = RootMoves[PVIdx].prevScore + highDelta;
             }
             else
             {
@@ -388,16 +388,16 @@ namespace {
                 }
                 else if (bestValue >= beta)
                 {
-                    beta += delta;
-                    delta += delta / 2;
+                    beta += highDelta;
+                    highDelta += highDelta / 2;
                 }
                 else
                 {
                     Signals.failedLowAtRoot = true;
                     Signals.stopOnPonderhit = false;
 
-                    alpha -= delta;
-                    delta += delta / 2;
+                    alpha -= lowDelta;
+                    lowDelta += lowDelta / 2;
                 }
 
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
