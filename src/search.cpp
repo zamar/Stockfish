@@ -389,7 +389,7 @@ namespace {
                 else if (bestValue >= beta)
                 {
                     beta += delta;
-                    delta += delta / 2;
+                    delta += delta;
                 }
                 else
                 {
@@ -397,7 +397,7 @@ namespace {
                     Signals.stopOnPonderhit = false;
 
                     alpha -= delta;
-                    delta += delta / 2;
+                    delta += delta;
                 }
 
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
