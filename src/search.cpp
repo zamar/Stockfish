@@ -68,6 +68,8 @@ namespace {
   Value FutilityMargins[16][64]; // [depth][moveNumber]
   int FutilityMoveCounts[32];    // [depth]
 
+  int Fibonacci[32];
+
   inline Value futility_margin(Depth d, int mn) {
 
     return d < 7 * ONE_PLY ? FutilityMargins[std::max(int(d), 1)][std::min(mn, 63)]
@@ -147,6 +149,12 @@ void Search::init() {
   // Init futility move count array
   for (d = 0; d < 32; d++)
       FutilityMoveCounts[d] = int(3.001 + 0.3 * pow(double(d), 1.8));
+
+  Fibonacci[0] = 0;
+  Fibonacci[1] = 1;
+
+  for (int i = 2; i < 32; i++)
+     Fibonacci[i] = Fibonacci[i-1] + Fibonacci[i-2];
 }
 
 
@@ -296,12 +304,13 @@ namespace {
   void id_loop(Position& pos) {
 
     Stack ss[MAX_PLY_PLUS_2];
-    int depth, prevBestMoveChanges;
-    Value bestValue, alpha, beta, delta;
+    int depth, prevBestMoveChanges, failCount;
+    Value bestValue, alpha, beta;
+    const Value delta = Value(16);
 
     memset(ss, 0, 4 * sizeof(Stack));
-    depth = BestMoveChanges = 0;
-    bestValue = delta = -VALUE_INFINITE;
+    depth = BestMoveChanges = failCount = 0;
+    bestValue = -VALUE_INFINITE;
     ss->currentMove = MOVE_NULL; // Hack to skip update gains
     TT.new_search();
     History.clear();
@@ -335,7 +344,6 @@ namespace {
             // Set aspiration window default width
             if (depth >= 5 && abs(RootMoves[PVIdx].prevScore) < VALUE_KNOWN_WIN)
             {
-                delta = Value(16);
                 alpha = RootMoves[PVIdx].prevScore - delta;
                 beta  = RootMoves[PVIdx].prevScore + delta;
             }
@@ -388,16 +396,14 @@ namespace {
                 }
                 else if (bestValue >= beta)
                 {
-                    beta += delta;
-                    delta += delta / 2;
+                    beta += delta * Fibonacci[++failCount];
                 }
                 else
                 {
                     Signals.failedLowAtRoot = true;
                     Signals.stopOnPonderhit = false;
 
-                    alpha -= delta;
-                    delta += delta / 2;
+                    alpha -= delta * Fibonacci[++failCount];
                 }
 
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
