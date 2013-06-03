@@ -764,8 +764,8 @@ Value do_evaluate(const Position& pos, Value& margin) {
         // value that will be used for pruning because this value can sometimes
         // be very big, and so capturing a single attacking piece can therefore
         // result in a score change far bigger than the value of the captured piece.
-        score -= KingDanger[Us == Search::RootColor][attackUnits];
-        margins[Us] += mg_value(KingDanger[Us == Search::RootColor][attackUnits]);
+        score -= apply_weight(KingDanger[Us == Search::RootColor][attackUnits], Us == pos.side_to_move() ? make_score(240, 240) : make_score(272, 272));
+        margins[Us] += mg_value(apply_weight(KingDanger[Us == Search::RootColor][attackUnits], Us == pos.side_to_move() ? make_score(240, 240) : make_score(272, 272)));
     }
 
     if (Trace)
