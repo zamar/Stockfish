@@ -1376,7 +1376,7 @@ Value Position::compute_non_pawn_material(Color c) const {
 /// Position::is_draw() tests whether the position is drawn by material,
 /// repetition, or the 50 moves rule. It does not detect stalemates, this
 /// must be done by the search.
-bool Position::is_draw() const {
+bool Position::is_draw(int ply) const {
 
   // Draw by material?
   if (   !pieces(PAWN)
@@ -1388,7 +1388,7 @@ bool Position::is_draw() const {
       return true;
 
   // Draw by repetition?
-  int i = 4, e = std::min(st->rule50, st->pliesFromNull);
+  int i = 4, e = std::min(st->rule50, st->pliesFromNull), cnt = 0;
 
   if (i <= e)
   {
@@ -1397,7 +1397,8 @@ bool Position::is_draw() const {
       do {
           stp = stp->previous->previous;
 
-          if (stp->key == st->key)
+          if (    stp->key == st->key
+              && (i <= ply || ++cnt >= 2))
               return true;
 
           i += 2;
