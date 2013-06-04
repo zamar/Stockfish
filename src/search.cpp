@@ -135,8 +135,8 @@ void Search::init() {
   for (hd = 1; hd < 64; hd++) for (mc = 1; mc < 64; mc++)
   {
       double  pvRed = log(double(hd)) * log(double(mc)) / 3.0;
-      double allRed = 0.33 + log(double(hd)) * log(double(mc)) / 2.25;
-      double cutRed = log(double(hd)) * log(double(mc)) / 1.5;
+      double allRed = 0.5  + log(double(hd)) * log(double(mc)) / 3.0;
+      double cutRed = 0.33 + log(double(hd)) * log(double(mc)) / 2.25;
       Reductions[0][hd][mc] = (int8_t) ( pvRed >= 1.0 ? floor( pvRed * int(ONE_PLY)) : 0);
       Reductions[1][hd][mc] = (int8_t) (allRed >= 1.0 ? floor(allRed * int(ONE_PLY)) : 0);
       Reductions[2][hd][mc] = (int8_t) (cutRed >= 1.0 ? floor(cutRed * int(ONE_PLY)) : 0);
