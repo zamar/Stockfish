@@ -375,6 +375,10 @@ Value do_evaluate(const Position& pos, Value& margin) {
       score += apply_weight(make_score(s * ei.mi->space_weight(), 0), Weights[Space]);
   }
 
+  // Second order king safety eval (only after full evalation)
+  score -= (  make_score(std::min(std::max(int(margins[BLACK]) * mg_value(score) / 2000, - margins[BLACK]), margins[BLACK]), 0)
+            + make_score(std::min(std::max(int(margins[WHITE]) * mg_value(score) / 2000, - margins[WHITE]), margins[WHITE]), 0)); 
+
   // Scale winning side if position is more drawish that what it appears
   ScaleFactor sf = eg_value(score) > VALUE_DRAW ? ei.mi->scale_factor(pos, WHITE)
                                                 : ei.mi->scale_factor(pos, BLACK);
