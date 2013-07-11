@@ -624,12 +624,12 @@ namespace {
     // Step 6. Razoring (is omitted in PV nodes)
     if (   !PvNode
         &&  depth < 4 * ONE_PLY
-        &&  eval + razor_margin(depth) < beta
+        &&  eval + ss->evalMargin + Value(128) + futility_margin(depth, 0) < beta
         &&  ttMove == MOVE_NONE
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY
         && !pos.pawn_on_7th(pos.side_to_move()))
     {
-        Value rbeta = beta - razor_margin(depth);
+        Value rbeta = beta - (eval + ss->evalMargin + Value(128) + futility_margin(depth, 0));
         Value v = qsearch<NonPV, false>(pos, ss, rbeta-1, rbeta, DEPTH_ZERO);
         if (v < rbeta)
             // Logically we should return (v + razor_margin(depth)), but
