@@ -930,10 +930,7 @@ moves_loop: // When in check and at SpNode search starts from here
           &&  move != ss->killers[0]
           &&  move != ss->killers[1])
       {
-          ss->reduction = reduction<PvNode>(depth, moveCount);
-
-          if (!PvNode && cutNode)
-              ss->reduction += ONE_PLY;
+          ss->reduction = reduction<PvNode>(depth, moveCount + ((!PvNode && cutNode) ? 2 : 0));
 
           if (move == countermoves[0] || move == countermoves[1])
               ss->reduction = std::max(DEPTH_ZERO, ss->reduction-ONE_PLY);
