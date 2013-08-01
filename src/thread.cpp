@@ -217,6 +217,13 @@ void ThreadPool::read_uci_options() {
 
   assert(requested > 0);
 
+  // Value -1 has a special meaning: We determine the optimal minimum split depth automatically.
+  // The minimumSplitDepth should never be under 4 plies.
+  if (minimumSplitDepth < 0)
+      minimumSplitDepth = (requested < 8 ? 4 : 7) * ONE_PLY;
+  else
+      minimumSplitDepth = std::max(4 * ONE_PLY, minimumSplitDepth);
+
   while (size() < requested)
       push_back(new_thread<Thread>());
 
