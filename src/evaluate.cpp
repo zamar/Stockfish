@@ -83,6 +83,9 @@ namespace {
     // king is on g8 and there's a white knight on g5, this knight adds
     // 2 to kingAdjacentZoneAttacksCount[BLACK].
     int kingAdjacentZoneAttacksCount[COLOR_NB];
+
+    //FIXME: Document
+    int kingProximityPoints[COLOR_NB];
   };
 
   // Evaluation grain size, must be a power of 2
@@ -445,9 +448,9 @@ Value do_evaluate(const Position& pos, Value& margin) {
         ei.kingRing[Them] = b | shift_bb<Down>(b);
         b &= ei.attackedBy[Us][PAWN];
         ei.kingAttackersCount[Us] = b ? popcount<Max15>(b) / 2 : 0;
-        ei.kingAdjacentZoneAttacksCount[Us] = ei.kingAttackersWeight[Us] = 0;
+        ei.kingAdjacentZoneAttacksCount[Us] = ei.kingAttackersWeight[Us] = ei.kingProximityPoints[Us] = 0;
     } else
-        ei.kingRing[Them] = ei.kingAttackersCount[Us] = 0;
+        ei.kingRing[Them] = ei.kingAttackersCount[Us] = ei.kingProximityPoints[Us] = 0;
   }
 
 
@@ -508,6 +511,9 @@ Value do_evaluate(const Position& pos, Value& margin) {
             if (bb)
                 ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
         }
+
+        if (Piece == QUEEN)
+            ei.kingProximityPoints[Us] += std::max(4 - square_distance(s, pos.king_square(Them)) - (Piece != QUEEN), 0);
 
         int mob = Piece != QUEEN ? popcount<Max15>(b & mobilityArea)
                                  : popcount<Full >(b & mobilityArea);
@@ -698,6 +704,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
         attackUnits =  std::min(25, (ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them]) / 2)
                      + 3 * (ei.kingAdjacentZoneAttacksCount[Them] + popcount<Max15>(undefended))
                      + KingExposed[relative_square(Us, ksq)]
+                     + ei.kingProximityPoints[Them]
                      - mg_value(score) / 32;
 
         // Analyse enemy's safe queen contact checks. First find undefended
