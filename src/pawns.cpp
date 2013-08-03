@@ -246,14 +246,14 @@ Value Entry::shelter_storm(const Position& pos, Square ksq) {
   kf = (kf == FILE_A) ? FILE_B : (kf == FILE_H) ? FILE_G : kf;
 
   const int shelterImportance[8][8] = {
-  { 128, 128, 128,   0,   0,   0,   0,   0 }, // King on A-file
-  { 128, 128, 128,   0,   0,   0,   0,   0 }, // King on B-file
-  {   0, 128, 128, 128,   0,   0,   0,   0 }, // King on C-file
+  { 128, 128,  64,   0,   0,   0,   0,   0 }, // King on A-file
+  { 128, 128,  64,   0,   0,   0,   0,   0 }, // King on B-file
+  {  64, 128, 128,  64,   0,   0,   0,   0 }, // King on C-file
   {   0,   0, 128, 128, 128,   0,   0,   0 }, // King on D-file
   {   0,   0,   0, 128, 128, 128,   0,   0 }, // King on E-file
-  {   0,   0,   0,   0, 128, 128, 128,   0 }, // King on F-file
-  {   0,   0,   0,   0,   0, 128, 128, 128 }, // King on G-file
-  {   0,   0,   0,   0,   0, 128, 128, 128 }  // Kinf on H-file
+  {   0,   0,   0,   0,  64, 128, 128,  64 }, // King on F-file
+  {   0,   0,   0,   0,   0,  64, 128, 128 }, // King on G-file
+  {   0,   0,   0,   0,   0,  64, 128, 128 }  // Kinf on H-file
   };
 
   //for (int f = kf - 1; f <= kf + 1; f++)
