@@ -228,17 +228,38 @@ Value Entry::shelter_storm(const Position& pos, Square ksq) {
   Rank rkUs, rkThem;
   File kf = file_of(ksq);
 
-  kf = (kf == FILE_A) ? FILE_B : (kf == FILE_H) ? FILE_G : kf;
+  Value penaltyPerFile[8];
 
-  for (int f = kf - 1; f <= kf + 1; f++)
+  for (int f = FILE_A; f <= FILE_H; f++)
   {
+      penaltyPerFile[f] = VALUE_ZERO;
+
       b = ourPawns & FileBB[f];
       rkUs = b ? relative_rank(Us, Us == WHITE ? lsb(b) : msb(b)) : RANK_1;
-      safety -= ShelterWeakness[rkUs];
+      penaltyPerFile[f] += ShelterWeakness[rkUs];
 
-      b  = theirPawns & FileBB[f];
+      b = theirPawns & FileBB[f];
       rkThem = b ? relative_rank(Us, Us == WHITE ? lsb(b) : msb(b)) : RANK_1;
-      safety -= StormDanger[rkUs == RANK_1 ? 0 : rkThem == rkUs + 1 ? 2 : 1][rkThem];
+      penaltyPerFile[f] += StormDanger[rkUs == RANK_1 ? 0 : rkThem == rkUs + 1 ? 2 : 1][rkThem];
+  }
+
+  kf = (kf == FILE_A) ? FILE_B : (kf == FILE_H) ? FILE_G : kf;
+
+  const int shelterImportance[8][8] = {
+  { 128, 128, 128,   0,   0,   0,   0,   0 }, // King on A-file
+  { 128, 128, 128,   0,   0,   0,   0,   0 }, // King on B-file
+  {   0, 128, 128, 128,   0,   0,   0,   0 }, // King on C-file
+  {   0,   0, 128, 128, 128,   0,   0,   0 }, // King on D-file
+  {   0,   0,   0, 128, 128, 128,   0,   0 }, // King on E-file
+  {   0,   0,   0,   0, 128, 128, 128,   0 }, // King on F-file
+  {   0,   0,   0,   0,   0, 128, 128, 128 }, // King on G-file
+  {   0,   0,   0,   0,   0, 128, 128, 128 }  // Kinf on H-file
+  };
+
+  //for (int f = kf - 1; f <= kf + 1; f++)
+  for (int f = FILE_A; f <= FILE_H; f++)
+  {
+      safety -= penaltyPerFile[f] * shelterImportance[kf][f] / 128;
   }
 
   return safety;
