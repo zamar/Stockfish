@@ -220,7 +220,7 @@ void ThreadPool::read_uci_options() {
   // Value 0 has a special meaning: We determine the optimal minimum split depth
   // automatically. Anyhow the minimumSplitDepth should never be under 4 plies.
   if (!minimumSplitDepth)
-      minimumSplitDepth = (requested < 8 ? 4 : 7) * ONE_PLY;
+      minimumSplitDepth = 7 * ONE_PLY;
   else
       minimumSplitDepth = std::max(4 * ONE_PLY, minimumSplitDepth);
 
