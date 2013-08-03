@@ -530,6 +530,19 @@ Value do_evaluate(const Position& pos, Value& margin) {
         if (Piece == BISHOP)
             score -= BishopPawns * ei.pi->pawns_on_same_color_squares(Us, s);
 
+        // Bonus for fianchettoed bishop protecting king. (FIXME: Clean this up!)
+        if (   Piece == BISHOP
+            && Us == WHITE
+            && square_distance(pos.king_square(Us), s) == 1
+            && (s == SQ_B2 || s == SQ_G2))
+            score += make_score(24, 0);
+
+        if (   Piece == BISHOP
+            && Us == BLACK
+            && square_distance(pos.king_square(Us), s) == 1
+            && (s == SQ_B7 || s == SQ_G7))
+            score += make_score(24, 0);
+
         // Bishop and knight outposts squares
         if (    (Piece == BISHOP || Piece == KNIGHT)
             && !(pos.pieces(Them, PAWN) & pawn_attack_span(Us, s)))
