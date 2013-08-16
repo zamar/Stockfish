@@ -55,6 +55,9 @@ const Bitboard Rank6BB = Rank1BB << (8 * 5);
 const Bitboard Rank7BB = Rank1BB << (8 * 6);
 const Bitboard Rank8BB = Rank1BB << (8 * 7);
 
+const Bitboard WhiteSideOfBoard = Rank1BB | Rank2BB | Rank3BB | Rank4BB;
+const Bitboard BlackSideOfBoard = Rank5BB | Rank6BB | Rank7BB | Rank8BB;
+
 CACHE_LINE_ALIGNMENT
 
 extern Bitboard RMasks[SQUARE_NB];

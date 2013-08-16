@@ -364,6 +364,10 @@ Value do_evaluate(const Position& pos, Value& margin) {
   score +=  evaluate_passed_pawns<WHITE, Trace>(pos, ei)
           - evaluate_passed_pawns<BLACK, Trace>(pos, ei);
 
+  // Evaluate board control, we need full attack information including king
+  score += (  popcount<Full>(BlackSideOfBoard & ei.attackedBy[WHITE][ALL_PIECES])
+            - popcount<Full>(WhiteSideOfBoard & ei.attackedBy[BLACK][ALL_PIECES])) * make_score(4,4);
+
   // If one side has only a king, check whether exists any unstoppable passed pawn
   if (!pos.non_pawn_material(WHITE) || !pos.non_pawn_material(BLACK))
       score += evaluate_unstoppable_pawns(pos, ei);
