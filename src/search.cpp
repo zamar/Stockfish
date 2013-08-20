@@ -723,6 +723,7 @@ namespace {
     // If we have a very good capture (i.e. SEE > seeValues[captured_piece_type])
     // and a reduced search returns a value much above beta, we can (almost) safely
     // prune the previous move.
+    /*
     if (   !PvNode
         &&  depth >= 5 * ONE_PLY
         && !ss->skipNullMove
@@ -749,6 +750,7 @@ namespace {
                     return value;
             }
     }
+    */
 
     // Step 10. Internal iterative deepening (skipped when in check)
     if (   depth >= (PvNode ? 5 * ONE_PLY : 8 * ONE_PLY)
@@ -932,6 +934,16 @@ moves_loop: // When in check and at SpNode search starts from here
       if (!SpNode && !captureOrPromotion && quietCount < 64)
           quietsSearched[quietCount++] = move;
 
+     // Bad capture detection.
+     bool isBadCap =   depth > 3 * ONE_PLY
+                    && captureOrPromotion
+                    && !pvMove
+                    && move != ttMove
+                    && !dangerous
+                    && type_of(move) != PROMOTION
+                    &&  abs(alpha) < VALUE_MATE_IN_MAX_PLY
+                    &&  pos.see_sign(move) < 0;
+
       // Step 14. Make the move
       pos.do_move(move, st, ci, givesCheck);
 
@@ -961,6 +973,23 @@ moves_loop: // When in check and at SpNode search starts from here
 
           doFullDepthSearch = (value > alpha && ss->reduction != DEPTH_ZERO);
           ss->reduction = DEPTH_ZERO;
+      }
+      else if (isBadCap)
+      {
+          ss->reduction = 3 * ONE_PLY;
+          Value redAlpha = alpha - 300;
+          Depth d = newDepth - ss->reduction;          
+
+          if (SpNode)
+              alpha = splitPoint->alpha;
+
+           value = d < ONE_PLY ?
+                          givesCheck ? -qsearch<NonPV,  true>(pos, ss+1, -(redAlpha+1), -redAlpha, DEPTH_ZERO)
+                                     : -qsearch<NonPV, false>(pos, ss+1, -(redAlpha+1), -redAlpha, DEPTH_ZERO)
+                                     : - search<NonPV>(pos, ss+1, -(redAlpha+1), -redAlpha, d, true);
+
+           doFullDepthSearch = (value > redAlpha);
+           ss->reduction = DEPTH_ZERO; // Restore original reduction
       }
       else
           doFullDepthSearch = !pvMove;
