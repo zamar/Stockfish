@@ -936,6 +936,7 @@ moves_loop: // When in check and at SpNode search starts from here
 
      // Bad capture detection.
      bool isBadCap =   depth > 3 * ONE_PLY
+                    && depth < 8 * ONE_PLY
                     && captureOrPromotion
                     && !pvMove
                     && move != ttMove
