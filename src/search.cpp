@@ -920,6 +920,29 @@ moves_loop: // When in check and at SpNode search starts from here
       else
           ss->futilityMoveCount = 0;
 
+      // TEST. Futility pruning for captures
+      if (   !PvNode
+          &&  depth < 2 * ONE_PLY
+          &&  captureOrPromotion
+          && !inCheck
+          && !givesCheck
+          &&  move != ttMove
+          &&  type_of(move) != PROMOTION
+          &&  ss->staticEval > -VALUE_KNOWN_WIN
+          && !pos.is_passed_pawn_push(move)
+          &&  pos.see_sign(move) < 0)
+      {
+          futilityValue =  ss->staticEval + ss->evalMargin + Value(128)
+                         + PieceValue[EG][pos.piece_on(to_sq(move))]
+                         + (type_of(move) == ENPASSANT ? PawnValueEg : VALUE_ZERO);
+
+          if (futilityValue < beta)
+          {
+              bestValue = std::max(bestValue, futilityValue);
+              continue;
+          }
+      }
+
       // Check for legality only before to do the move
       if (!RootNode && !SpNode && !pos.pl_move_is_legal(move, ci.pinned))
       {
