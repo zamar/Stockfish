@@ -932,7 +932,7 @@ moves_loop: // When in check and at SpNode search starts from here
           && !pos.is_passed_pawn_push(move)
           &&  pos.see_sign(move) < 0)
       {
-          futilityValue =  ss->staticEval + ss->evalMargin + Value(128)
+          futilityValue =  ss->staticEval + ss->evalMargin + Value(256)
                          + PieceValue[EG][pos.piece_on(to_sq(move))]
                          + (type_of(move) == ENPASSANT ? PawnValueEg : VALUE_ZERO);
 
