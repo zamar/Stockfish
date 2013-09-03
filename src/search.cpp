@@ -1374,8 +1374,8 @@ moves_loop: // When in check and at SpNode search starts from here
         return true;
 
     // Queen contact check is very dangerous
-    if (type_of(pc) == QUEEN && (kingAtt & to))
-        return true;
+    //if (type_of(pc) == QUEEN && (kingAtt & to))
+    //    return true;
 
     // Creating new double threats with checks is dangerous
     Bitboard b = (enemies ^ ksq) & newAtt & ~oldAtt;
