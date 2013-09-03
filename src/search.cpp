@@ -1370,8 +1370,8 @@ moves_loop: // When in check and at SpNode search starts from here
     Bitboard newAtt = pos.attacks_from(pc, to, occ);
 
     // Checks which give opponent's king at most one escape square are dangerous
-    if (!more_than_one(kingAtt & ~(enemies | newAtt | to)))
-        return true;
+    //if (!more_than_one(kingAtt & ~(enemies | newAtt | to)))
+    //    return true;
 
     // Queen contact check is very dangerous
     if (type_of(pc) == QUEEN && (kingAtt & to))
