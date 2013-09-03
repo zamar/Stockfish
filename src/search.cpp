@@ -1273,7 +1273,7 @@ moves_loop: // When in check and at SpNode search starts from here
           &&  givesCheck
           &&  move != ttMove
           && !pos.is_capture_or_promotion(move)
-          &&  ss->staticEval + PawnValueMg / 4 < beta
+          // &&  ss->staticEval + PawnValueMg / 4 < beta
           && !check_is_dangerous(pos, move, futilityBase, beta))
           continue;
 
