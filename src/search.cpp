@@ -1143,8 +1143,8 @@ moves_loop: // When in check and at SpNode search starts from here
     Depth ttDepth;
 
     // To flag BOUND_EXACT a node with eval above alpha and no available moves
-    if (PvNode)
-        oldAlpha = alpha;
+    //if (PvNode)
+    //    oldAlpha = alpha;
 
     ss->currentMove = bestMove = MOVE_NONE;
     ss->ply = (ss-1)->ply + 1;
@@ -1160,8 +1160,8 @@ moves_loop: // When in check and at SpNode search starts from here
                                                   : DEPTH_QS_NO_CHECKS;
 
     // Transposition table lookup
-    posKey = pos.key();
-    tte = TT.probe(posKey);
+    //posKey = pos.key();
+    tte = NULL; //TT.probe(posKey);
     ttMove = tte ? tte->move() : MOVE_NONE;
     ttValue = tte ? value_from_tt(tte->value(),ss->ply) : VALUE_NONE;
 
@@ -1305,8 +1305,9 @@ moves_loop: // When in check and at SpNode search starts from here
               }
               else // Fail high
               {
+                  /*
                   TT.store(posKey, value_to_tt(value, ss->ply), BOUND_LOWER,
-                           ttDepth, move, ss->staticEval, ss->evalMargin);
+                           ttDepth, move, ss->staticEval, ss->evalMargin); */
 
                   return value;
               }
@@ -1319,9 +1320,11 @@ moves_loop: // When in check and at SpNode search starts from here
     if (InCheck && bestValue == -VALUE_INFINITE)
         return mated_in(ss->ply); // Plies to mate from the root
 
+    /*
     TT.store(posKey, value_to_tt(bestValue, ss->ply),
              PvNode && bestValue > oldAlpha ? BOUND_EXACT : BOUND_UPPER,
              ttDepth, bestMove, ss->staticEval, ss->evalMargin);
+    */
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
