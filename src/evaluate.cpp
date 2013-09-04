@@ -527,6 +527,11 @@ Value do_evaluate(const Position& pos, Value& margin) {
                  && !more_than_one(BetweenBB[s][pos.king_square(Them)] & pos.pieces()))
                  score += BishopPin;
 
+        // FIXME
+        if (    Piece == BISHOP
+            && (DarkSquares & s))
+            score -= make_score(8, 0);
+
         // Penalty for bishop with same coloured pawns
         if (Piece == BISHOP)
             score -= BishopPawns * ei.pi->pawns_on_same_color_squares(Us, s);
