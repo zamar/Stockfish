@@ -530,7 +530,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
         // FIXME
         if (    Piece == BISHOP
             && (DarkSquares & s))
-            score -= make_score(8, 0);
+            score += make_score(8, 0);
 
         // Penalty for bishop with same coloured pawns
         if (Piece == BISHOP)
