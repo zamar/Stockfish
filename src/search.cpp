@@ -661,7 +661,8 @@ namespace {
         return eval - futility_margin(depth, (ss-1)->futilityMoveCount);
 
     // Step 8. Null move search with verification search (is omitted in PV nodes)
-    if (   !PvNode
+    if (   false
+        && !PvNode
         && !ss->skipNullMove
         &&  depth >= 2 * ONE_PLY
         &&  eval >= beta
@@ -865,7 +866,8 @@ moves_loop: // When in check and at SpNode search starts from here
       newDepth = depth - ONE_PLY + ext;
 
       // Step 13. Futility pruning (is omitted in PV nodes)
-      if (   !PvNode
+      if (   false
+          && !PvNode
           && !captureOrPromotion
           && !inCheck
           && !dangerous
