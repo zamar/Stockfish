@@ -1213,7 +1213,7 @@ moves_loop: // When in check and at SpNode search starts from here
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions and checks (only if depth >= DEPTH_QS_CHECKS) will
     // be generated.
-    MovePicker mp(pos, ttMove, depth, History, to_sq((ss-1)->currentMove));
+    MovePicker mp(pos, ttMove, depth > DEPTH_QS_RECAPTURES ? DEPTH_ZERO : depth, History, to_sq((ss-1)->currentMove));
     CheckInfo ci(pos);
 
     // Loop through the moves until no moves remain or a beta cutoff occurs
@@ -1266,6 +1266,13 @@ moves_loop: // When in check and at SpNode search starts from here
           &&  pos.see_sign(move) < 0)
           continue;
 
+      // FIXME
+      bool CheckOnly = (    depth < DEPTH_QS_CHECKS
+                        && !InCheck
+                        &&  givesCheck
+                        &&  move != ttMove
+                        && !pos.is_capture_or_promotion(move));
+
       // Check for legality only before to do the move
       if (!pos.pl_move_is_legal(move, ci.pinned))
           continue;
@@ -1274,7 +1281,7 @@ moves_loop: // When in check and at SpNode search starts from here
 
       // Make and search the move
       pos.do_move(move, st, ci, givesCheck);
-      value = givesCheck ? -qsearch<NT,  true>(pos, ss+1, -beta, -alpha, depth - ONE_PLY)
+      value = givesCheck ? -qsearch<NT,  true>(pos, ss+1, -beta, -alpha, CheckOnly ? DEPTH_QS_RECAPTURES : depth - ONE_PLY)
                          : -qsearch<NT, false>(pos, ss+1, -beta, -alpha, depth - ONE_PLY);
       pos.undo_move(move);
 
