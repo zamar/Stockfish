@@ -1086,6 +1086,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
 
   // interpolate() interpolates between a middle game and an endgame score,
   // based on game phase. It also scales the return value by a ScaleFactor array.
+  const Value GAME_PHASE_CONTEMPT = Value(15);
 
   Value interpolate(const Score& v, Phase ph, ScaleFactor sf) {
 
@@ -1093,8 +1094,9 @@ Value do_evaluate(const Position& pos, Value& margin) {
     assert(eg_value(v) > -VALUE_INFINITE && eg_value(v) < VALUE_INFINITE);
     assert(ph >= PHASE_ENDGAME && ph <= PHASE_MIDGAME);
 
+    int m =  mg_value(v) + GAME_PHASE_CONTEMPT * (Search::RootColor == WHITE ? 1 : -1);
     int e = (eg_value(v) * int(sf)) / SCALE_FACTOR_NORMAL;
-    int r = (mg_value(v) * int(ph) + e * int(PHASE_MIDGAME - ph)) / PHASE_MIDGAME;
+    int r = (m * int(ph) + e * int(PHASE_MIDGAME - ph)) / PHASE_MIDGAME;
     return Value((r / GrainSize) * GrainSize); // Sign independent
   }
 
