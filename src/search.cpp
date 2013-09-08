@@ -1134,9 +1134,9 @@ moves_loop: // When in check and at SpNode search starts from here
     assert(depth <= DEPTH_ZERO);
 
     StateInfo st;
-    const TTEntry* tte;
-    Key posKey;
-    Move ttMove, move, bestMove;
+    const TTEntry* tte = NULL;
+    Key posKey = 0ULL;
+    Move ttMove = MOVE_NONE, move, bestMove;
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
     bool givesCheck, evasionPrunable;
     Depth ttDepth;
@@ -1155,10 +1155,14 @@ moves_loop: // When in check and at SpNode search starts from here
     // Decide whether or not to include checks, this fixes also the type of
     // TT entry depth that we are going to use. Note that in qsearch we use
     // only two types of depth in TT: DEPTH_QS_CHECKS or DEPTH_QS_NO_CHECKS.
+    bool useTT = depth > DEPTH_QS_RECAPTURES;
+
     ttDepth = InCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS
                                                   : DEPTH_QS_NO_CHECKS;
 
     // Transposition table lookup
+    if (useTT) {
+
     posKey = pos.key();
     tte = TT.probe(posKey);
     ttMove = tte ? tte->move() : MOVE_NONE;
@@ -1173,6 +1177,8 @@ moves_loop: // When in check and at SpNode search starts from here
     {
         ss->currentMove = ttMove; // Can be MOVE_NONE
         return ttValue;
+    }
+
     }
 
     // Evaluate the position statically
@@ -1196,7 +1202,7 @@ moves_loop: // When in check and at SpNode search starts from here
         // Stand pat. Return immediately if static value is at least beta
         if (bestValue >= beta)
         {
-            if (!tte)
+            if (useTT && !tte)
                 TT.store(pos.key(), value_to_tt(bestValue, ss->ply), BOUND_LOWER,
                          DEPTH_NONE, MOVE_NONE, ss->staticEval, ss->evalMargin);
 
@@ -1294,6 +1300,7 @@ moves_loop: // When in check and at SpNode search starts from here
               }
               else // Fail high
               {
+                  if (useTT)
                   TT.store(posKey, value_to_tt(value, ss->ply), BOUND_LOWER,
                            ttDepth, move, ss->staticEval, ss->evalMargin);
 
@@ -1308,6 +1315,7 @@ moves_loop: // When in check and at SpNode search starts from here
     if (InCheck && bestValue == -VALUE_INFINITE)
         return mated_in(ss->ply); // Plies to mate from the root
 
+    if (useTT)
     TT.store(posKey, value_to_tt(bestValue, ss->ply),
              PvNode && bestValue > oldAlpha ? BOUND_EXACT : BOUND_UPPER,
              ttDepth, bestMove, ss->staticEval, ss->evalMargin);
