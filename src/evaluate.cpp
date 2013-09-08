@@ -251,7 +251,7 @@ namespace {
 
   Score evaluate_unstoppable_pawns(const Position& pos, const EvalInfo& ei);
 
-  Value interpolate(const Score& v, Phase ph, ScaleFactor sf);
+  Value interpolate(const Score& v, Phase ph, ScaleFactor sf, Color stm);
   Score apply_weight(Score v, Score w);
   Score weight_option(const std::string& mgOpt, const std::string& egOpt, Score internalWeight);
   double to_cp(Value v);
@@ -401,7 +401,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
   }
 
   margin = margins[pos.side_to_move()];
-  Value v = interpolate(score, ei.mi->game_phase(), sf);
+  Value v = interpolate(score, ei.mi->game_phase(), sf, pos.side_to_move());
 
   // In case of tracing add all single evaluation contributions for both white and black
   if (Trace)
@@ -1086,15 +1086,17 @@ Value do_evaluate(const Position& pos, Value& margin) {
 
   // interpolate() interpolates between a middle game and an endgame score,
   // based on game phase. It also scales the return value by a ScaleFactor array.
+  const Value GAME_PHASE_CONTEMPT = Value(7);
 
-  Value interpolate(const Score& v, Phase ph, ScaleFactor sf) {
+  Value interpolate(const Score& v, Phase ph, ScaleFactor sf, Color stm) {
 
     assert(mg_value(v) > -VALUE_INFINITE && mg_value(v) < VALUE_INFINITE);
     assert(eg_value(v) > -VALUE_INFINITE && eg_value(v) < VALUE_INFINITE);
     assert(ph >= PHASE_ENDGAME && ph <= PHASE_MIDGAME);
 
+    int m =  mg_value(v) + GAME_PHASE_CONTEMPT * (stm == Search::RootColor ? 1 : -1);
     int e = (eg_value(v) * int(sf)) / SCALE_FACTOR_NORMAL;
-    int r = (mg_value(v) * int(ph) + e * int(PHASE_MIDGAME - ph)) / PHASE_MIDGAME;
+    int r = (m * int(ph) + e * int(PHASE_MIDGAME - ph)) / PHASE_MIDGAME;
     return Value((r / GrainSize) * GrainSize); // Sign independent
   }
 
