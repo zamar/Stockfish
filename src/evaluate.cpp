@@ -1086,7 +1086,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
 
   // interpolate() interpolates between a middle game and an endgame score,
   // based on game phase. It also scales the return value by a ScaleFactor array.
-  const Value GAME_PHASE_CONTEMPT = Value(31);
+  const Value GAME_PHASE_CONTEMPT = Value(47);
 
   Value interpolate(const Score& v, Phase ph, ScaleFactor sf) {
 
