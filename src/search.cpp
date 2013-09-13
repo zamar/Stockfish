@@ -835,7 +835,7 @@ moves_loop: // When in check and at SpNode search starts from here
           ext = ONE_PLY;
 
       else if (givesCheck && pos.see_sign(move) >= 0)
-          ext = inCheck || ss->staticEval <= alpha ? ONE_PLY : ONE_PLY / 2;
+          ext = inCheck || ss->staticEval <= alpha || (ss-1)->extension < ONE_PLY ? ONE_PLY : ONE_PLY / 2;
 
       // Singular extension search. If all moves but one fail low on a search of
       // (alpha-s, beta-s), and just one fails high on (alpha, beta), then that move
@@ -933,6 +933,7 @@ moves_loop: // When in check and at SpNode search starts from here
           quietsSearched[quietCount++] = move;
 
       // Step 14. Make the move
+      ss->extension = ext;
       pos.do_move(move, st, ci, givesCheck);
 
       // Step 15. Reduced depth search (LMR). If the move fails high will be
@@ -986,6 +987,7 @@ moves_loop: // When in check and at SpNode search starts from here
                                      : - search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
       // Step 17. Undo move
       pos.undo_move(move);
+      ss->extension = Depth(0);
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
