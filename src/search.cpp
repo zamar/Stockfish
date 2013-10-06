@@ -1138,7 +1138,6 @@ moves_loop: // When in check and at SpNode search starts from here
     Move ttMove, move, bestMove;
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
     bool givesCheck, evasionPrunable;
-    Depth ttDepth;
 
     // To flag BOUND_EXACT a node with eval above alpha and no available moves
     if (PvNode)
@@ -1151,12 +1150,6 @@ moves_loop: // When in check and at SpNode search starts from here
     if (pos.is_draw() || ss->ply > MAX_PLY)
         return DrawValue[pos.side_to_move()];
 
-    // Decide whether or not to include checks, this fixes also the type of
-    // TT entry depth that we are going to use. Note that in qsearch we use
-    // only two types of depth in TT: DEPTH_QS_CHECKS or DEPTH_QS_NO_CHECKS.
-    ttDepth = InCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS
-                                                  : DEPTH_QS_NO_CHECKS;
-
     // Transposition table lookup
     posKey = pos.key();
     tte = TT.probe(posKey);
@@ -1164,7 +1157,7 @@ moves_loop: // When in check and at SpNode search starts from here
     ttValue = tte ? value_from_tt(tte->value(),ss->ply) : VALUE_NONE;
 
     if (   tte
-        && tte->depth() >= ttDepth
+        && tte->depth() >= depth - ONE_PLY
         && ttValue != VALUE_NONE // Only in case of TT access race
         && (           PvNode ?  tte->bound() == BOUND_EXACT
             : ttValue >= beta ? (tte->bound() &  BOUND_LOWER)
@@ -1294,7 +1287,7 @@ moves_loop: // When in check and at SpNode search starts from here
               else // Fail high
               {
                   TT.store(posKey, value_to_tt(value, ss->ply), BOUND_LOWER,
-                           ttDepth, move, ss->staticEval, ss->evalMargin);
+                           depth, move, ss->staticEval, ss->evalMargin);
 
                   return value;
               }
@@ -1309,7 +1302,7 @@ moves_loop: // When in check and at SpNode search starts from here
 
     TT.store(posKey, value_to_tt(bestValue, ss->ply),
              PvNode && bestValue > oldAlpha ? BOUND_EXACT : BOUND_UPPER,
-             ttDepth, bestMove, ss->staticEval, ss->evalMargin);
+             depth, bestMove, ss->staticEval, ss->evalMargin);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
