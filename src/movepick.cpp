@@ -70,8 +70,8 @@ namespace {
 /// search captures, promotions and some checks) and about how important good
 /// move ordering is at the current node.
 
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const HistoryStats& h,
-                       Move* cm, Search::Stack* s) : pos(p), history(h), depth(d) {
+MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const HistoryStats& h, const GainsStats& g,
+                       Move* cm, Search::Stack* s) : pos(p), history(h), gain(g), depth(d) {
 
   assert(d > DEPTH_ZERO);
 
@@ -90,8 +90,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const HistoryStats&
   end += (ttMove != MOVE_NONE);
 }
 
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const HistoryStats& h,
-                       Square sq) : pos(p), history(h), cur(moves), end(moves) {
+MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const HistoryStats& h, const GainsStats& g,
+                       Square sq) : pos(p), history(h), gain(g), cur(moves), end(moves) {
 
   assert(d <= DEPTH_ZERO);
 
@@ -122,8 +122,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const HistoryStats&
   end += (ttMove != MOVE_NONE);
 }
 
-MovePicker::MovePicker(const Position& p, Move ttm, const HistoryStats& h, PieceType pt)
-                       : pos(p), history(h), cur(moves), end(moves) {
+MovePicker::MovePicker(const Position& p, Move ttm, const HistoryStats& h, const GainsStats& g, PieceType pt)
+                       : pos(p), history(h), gain(g), cur(moves), end(moves) {
 
   assert(!pos.checkers());
 
@@ -181,7 +181,7 @@ void MovePicker::score<QUIETS>() {
   for (ExtMove* it = moves; it != end; ++it)
   {
       m = it->move;
-      it->score = history[pos.moved_piece(m)][to_sq(m)];
+      it->score = history[pos.moved_piece(m)][to_sq(m)] * 4096 + gain[pos.moved_piece(m)][to_sq(m)];
   }
 }
 

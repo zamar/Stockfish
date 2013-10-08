@@ -59,8 +59,8 @@ struct Stats {
     if (Gain)
         table[p][to] = std::max(v, table[p][to] - 1);
 
-    else if (abs(table[p][to] + v) < Max)
-        table[p][to] +=  v;
+    else
+        table[p][to] = std::min(std::max(table[p][to] + v, -Max), Max);
   }
 
 private:
@@ -84,9 +84,9 @@ class MovePicker {
   MovePicker& operator=(const MovePicker&); // Silence a warning under MSVC
 
 public:
-  MovePicker(const Position&, Move, Depth, const HistoryStats&, Square);
-  MovePicker(const Position&, Move, const HistoryStats&, PieceType);
-  MovePicker(const Position&, Move, Depth, const HistoryStats&, Move*, Search::Stack*);
+  MovePicker(const Position&, Move, Depth, const HistoryStats&, const GainsStats&, Square);
+  MovePicker(const Position&, Move, const HistoryStats&, const GainsStats& , PieceType);
+  MovePicker(const Position&, Move, Depth, const HistoryStats&, const GainsStats&, Move*, Search::Stack*);
 
   template<bool SpNode> Move next_move();
 
@@ -96,6 +96,7 @@ private:
 
   const Position& pos;
   const HistoryStats& history;
+  const GainsStats& gain;
   Search::Stack* ss;
   Move* countermoves;
   Depth depth;
