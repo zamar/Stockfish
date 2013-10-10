@@ -683,6 +683,8 @@ Value do_evaluate(const Position& pos, Value& margin) {
     Score score = ei.pi->king_safety<Us>(pos, ksq);
 
     // Analyse enemy's safe distance checks for sliders and knights
+    const Score CheckPenalty = make_score(12, 12);
+
     safe = ~(pos.pieces(Them) | ei.attackedBy[Us][ALL_PIECES]);
 
     b1 = pos.attacks_from<ROOK>(ksq) & safe;
@@ -693,22 +695,32 @@ Value do_evaluate(const Position& pos, Value& margin) {
     if (b)
     {
         attackUnits += QueenCheck * popcount<Max15>(b);
+        score -= CheckPenalty;
     }
 
     // Enemy rooks safe checks
     b = b1 & ei.attackedBy[Them][ROOK];
     if (b)
+    {
         attackUnits += RookCheck * popcount<Max15>(b);
+        score -= CheckPenalty;
+    }
 
     // Enemy bishops safe checks
     b = b2 & ei.attackedBy[Them][BISHOP];
     if (b)
+    {
         attackUnits += BishopCheck * popcount<Max15>(b);
+        score -= CheckPenalty;
+    }
 
     // Enemy knights safe checks
     b = pos.attacks_from<KNIGHT>(ksq) & ei.attackedBy[Them][KNIGHT] & safe;
     if (b)
+    {
         attackUnits += KnightCheck * popcount<Max15>(b);
+        score -= CheckPenalty;
+    }
 
     // King safety. This is quite complicated, and is almost certainly far
     // from optimally tuned.
