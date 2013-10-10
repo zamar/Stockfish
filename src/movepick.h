@@ -40,7 +40,8 @@
 template<bool Gain, typename T>
 struct Stats {
 
-  static const Value Max = Value(2000);
+  static const int AgingFactor = 64;
+  static const int Max = (int(ONE_PLY) * int(MAX_PLY)) * (int(ONE_PLY) * int(MAX_PLY)) * AgingFactor;
 
   const T* operator[](Piece p) const { return table[p]; }
   void clear() { std::memset(table, 0, sizeof(table)); }
@@ -59,8 +60,8 @@ struct Stats {
     if (Gain)
         table[p][to] = std::max(v, table[p][to] - 1);
 
-    else if (abs(table[p][to] + v) < Max)
-        table[p][to] +=  v;
+    else
+        table[p][to] = (table[p][to] + v) * (AgingFactor - 1) / AgingFactor;
   }
 
 private:
