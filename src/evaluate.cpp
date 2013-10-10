@@ -676,11 +676,39 @@ Value do_evaluate(const Position& pos, Value& margin) {
     const Color Them = (Us == WHITE ? BLACK : WHITE);
 
     Bitboard undefended, b, b1, b2, safe;
-    int attackUnits;
+    int attackUnits = 0;
     const Square ksq = pos.king_square(Us);
 
     // King shelter and enemy pawns storm
     Score score = ei.pi->king_safety<Us>(pos, ksq);
+
+    // Analyse enemy's safe distance checks for sliders and knights
+    safe = ~(pos.pieces(Them) | ei.attackedBy[Us][ALL_PIECES]);
+
+    b1 = pos.attacks_from<ROOK>(ksq) & safe;
+    b2 = pos.attacks_from<BISHOP>(ksq) & safe;
+
+    // Enemy queen safe checks
+    b = (b1 | b2) & ei.attackedBy[Them][QUEEN];
+    if (b)
+    {
+        attackUnits += QueenCheck * popcount<Max15>(b);
+    }
+
+    // Enemy rooks safe checks
+    b = b1 & ei.attackedBy[Them][ROOK];
+    if (b)
+        attackUnits += RookCheck * popcount<Max15>(b);
+
+    // Enemy bishops safe checks
+    b = b2 & ei.attackedBy[Them][BISHOP];
+    if (b)
+        attackUnits += BishopCheck * popcount<Max15>(b);
+
+    // Enemy knights safe checks
+    b = pos.attacks_from<KNIGHT>(ksq) & ei.attackedBy[Them][KNIGHT] & safe;
+    if (b)
+        attackUnits += KnightCheck * popcount<Max15>(b);
 
     // King safety. This is quite complicated, and is almost certainly far
     // from optimally tuned.
@@ -699,7 +727,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
         // number and types of the enemy's attacking pieces, the number of
         // attacked and undefended squares around our king, the square of the
         // king, and the quality of the pawn shelter.
-        attackUnits =  std::min(25, (ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them]) / 2)
+        attackUnits += std::min(25, (ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them]) / 2)
                      + 3 * (ei.kingAdjacentZoneAttacksCount[Them] + popcount<Max15>(undefended))
                      + KingExposed[relative_square(Us, ksq)]
                      - mg_value(score) / 32;
@@ -735,32 +763,6 @@ Value do_evaluate(const Position& pos, Value& margin) {
                               * popcount<Max15>(b)
                               * (Them == pos.side_to_move() ? 2 : 1);
         }
-
-        // Analyse enemy's safe distance checks for sliders and knights
-        safe = ~(pos.pieces(Them) | ei.attackedBy[Us][ALL_PIECES]);
-
-        b1 = pos.attacks_from<ROOK>(ksq) & safe;
-        b2 = pos.attacks_from<BISHOP>(ksq) & safe;
-
-        // Enemy queen safe checks
-        b = (b1 | b2) & ei.attackedBy[Them][QUEEN];
-        if (b)
-            attackUnits += QueenCheck * popcount<Max15>(b);
-
-        // Enemy rooks safe checks
-        b = b1 & ei.attackedBy[Them][ROOK];
-        if (b)
-            attackUnits += RookCheck * popcount<Max15>(b);
-
-        // Enemy bishops safe checks
-        b = b2 & ei.attackedBy[Them][BISHOP];
-        if (b)
-            attackUnits += BishopCheck * popcount<Max15>(b);
-
-        // Enemy knights safe checks
-        b = pos.attacks_from<KNIGHT>(ksq) & ei.attackedBy[Them][KNIGHT] & safe;
-        if (b)
-            attackUnits += KnightCheck * popcount<Max15>(b);
 
         // To index KingDanger[] attackUnits must be in [0, 99] range
         attackUnits = std::min(99, std::max(0, attackUnits));
