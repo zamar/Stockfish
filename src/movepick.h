@@ -40,7 +40,7 @@
 template<bool Gain, typename T>
 struct Stats {
 
-  static const int AgingFactor = 64;
+  static const int AgingFactor = 10;
   static const int Max = (int(ONE_PLY) * int(MAX_PLY)) * (int(ONE_PLY) * int(MAX_PLY)) * AgingFactor;
 
   const T* operator[](Piece p) const { return table[p]; }
