@@ -83,6 +83,7 @@ namespace {
   size_t PVSize, PVIdx;
   TimeManager TimeMgr;
   double BestMoveChanges;
+  bool IsEasy;
   Value DrawValue[COLOR_NB];
   HistoryStats History;
   GainsStats Gains;
@@ -305,6 +306,7 @@ namespace {
 
     depth = 0;
     BestMoveChanges = 0;
+    IsEasy = true;
     bestValue = delta = alpha = -VALUE_INFINITE;
     beta = VALUE_INFINITE;
 
@@ -439,25 +441,31 @@ namespace {
             if (Time::now() - SearchTime > (TimeMgr.available_time() * 62) / 100)
                 stop = true;
 
-            // Stop search early if one move seems to be much better than others
-            if (    depth >= 12
+            // Is move an "easy move" (much better than the others?)
+            if (    IsEasy
                 &&  BestMoveChanges <= DBL_EPSILON
                 && !stop
                 &&  PVSize == 1
-                &&  bestValue > VALUE_MATED_IN_MAX_PLY
-                && (   RootMoves.size() == 1
-                    || Time::now() - SearchTime > (TimeMgr.available_time() * 20) / 100))
+                &&  bestValue > VALUE_MATED_IN_MAX_PLY)
             {
                 Value rBeta = bestValue - 2 * PawnValueMg;
                 ss->excludedMove = RootMoves[0].pv[0];
                 ss->skipNullMove = true;
-                Value v = search<NonPV>(pos, ss, rBeta - 1, rBeta, (depth - 3) * ONE_PLY, true);
+                Value v = (depth >= 4 ? search<NonPV>(pos, ss, rBeta - 1, rBeta, (depth - 3) * ONE_PLY, true) : rBeta - 1);
                 ss->skipNullMove = false;
                 ss->excludedMove = MOVE_NONE;
 
-                if (v < rBeta)
-                    stop = true;
+                IsEasy = (v < rBeta);
             }
+            else
+                IsEasy = false;
+
+            // Stop search early for easy moves.
+            if (    IsEasy
+                &&  depth >= 12
+                && (   RootMoves.size() == 1
+                    || Time::now() - SearchTime > (TimeMgr.available_time() * 20) / 100))
+                stop = true;
 
             if (stop)
             {
