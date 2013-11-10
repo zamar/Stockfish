@@ -36,7 +36,7 @@
 /// Countermoves store the move that refute a previous one. Entries are stored
 /// according only to moving piece and destination square, hence two moves with
 /// different origin but same destination and piece will be considered identical.
-template<typename T>
+template<bool Gain, typename T>
 struct Stats {
 
   static const Value Max = Value(2000);
@@ -55,16 +55,19 @@ struct Stats {
 
   void update(Piece p, Square to, Value v) {
 
-    if (abs(table[p][to] + v) < Max)
-        table[p][to] +=  v;
+  if (Gain) 
+      table[p][to] = std::max(v, table[p][to] - 1); 
+  else if (abs(table[p][to] + v) < Max) 
+      table[p][to] +=  v;
   }
 
 private:
   T table[PIECE_NB][SQUARE_NB];
 };
 
-typedef Stats<Value> HistoryStats;
-typedef Stats<std::pair<Move, Move> > CountermovesStats;
+typedef Stats< true, Value> GainsStats;
+typedef Stats<false, Value> HistoryStats;
+typedef Stats<false, std::pair<Move, Move> > CountermovesStats;
 
 
 /// MovePicker class is used to pick one pseudo legal move at a time from the

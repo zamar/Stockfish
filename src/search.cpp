@@ -82,6 +82,7 @@ namespace {
   double BestMoveChanges;
   Value DrawValue[COLOR_NB];
   HistoryStats History;
+  GainsStats Gains;
   CountermovesStats Countermoves;
 
   template <NodeType NT>
@@ -293,6 +294,7 @@ namespace {
     Value bestValue, alpha, beta, delta;
 
     std::memset(ss-2, 0, 5 * sizeof(Stack));
+    (ss-1)->currentMove = MOVE_NULL; // Hack to skip update gains
 
     depth = 0;
     BestMoveChanges = 0;
@@ -301,6 +303,7 @@ namespace {
 
     TT.new_search();
     History.clear();
+    Gains.clear();
     Countermoves.clear();
 
     PVSize = Options["MultiPV"];
@@ -600,6 +603,16 @@ namespace {
         eval = ss->staticEval = evaluate(pos);
         TT.store(posKey, VALUE_NONE, BOUND_NONE, DEPTH_NONE, MOVE_NONE, ss->staticEval);
     }
+    
+    if (   !pos.captured_piece_type() 
+        &&  ss->staticEval != VALUE_NONE 
+        && (ss-1)->staticEval != VALUE_NONE 
+        && (move = (ss-1)->currentMove) != MOVE_NULL 
+        &&  type_of(move) == NORMAL) 
+    { 
+        Square to = to_sq(move); 
+        Gains.update(pos.piece_on(to), to, -(ss-1)->staticEval - ss->staticEval); 
+    }
 
     // Step 6. Razoring (skipped when in check)
     if (   !PvNode
@@ -852,7 +865,7 @@ moves_loop: // When in check and at SpNode search starts from here
           // Futility pruning: parent node
           if (predictedDepth < 7 * ONE_PLY)
           {
-              Value futilityValue = ss->staticEval + futility_margin(predictedDepth) + Value(128);
+              Value futilityValue = ss->staticEval + futility_margin(predictedDepth) + Value(128) + Gains[pos.moved_piece(move)][to_sq(move)];;
 
               if (futilityValue <= alpha)
               {
