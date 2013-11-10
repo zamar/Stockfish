@@ -491,9 +491,6 @@ Value do_evaluate(const Position& pos) {
           : Piece ==   ROOK ? attacks_bb<  ROOK>(s, pos.pieces() ^ pos.pieces(Us, ROOK, QUEEN))
                             : pos.attacks_from<Piece>(s);
 
-        if (ei.pinnedPieces[Us] & s)
-            b &= LineBB[pos.king_square(Us)][s];
-
         ei.attackedBy[Us][Piece] |= b;
 
         if (b & ei.kingRing[Them])
@@ -505,8 +502,14 @@ Value do_evaluate(const Position& pos) {
                 ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
         }
 
-        int mob = Piece != QUEEN ? popcount<Max15>(b & mobilityArea)
-                                 : popcount<Full >(b & mobilityArea);
+        // Calculate mobility (take pins into account)
+        Bitboard mobb = b;
+
+        if (ei.pinnedPieces[Us] & s)
+            mobb &= LineBB[pos.king_square(Us)][s]; 
+
+        int mob = Piece != QUEEN ? popcount<Max15>(mobb & mobilityArea)
+                                 : popcount<Full >(mobb & mobilityArea);
 
         mobility[Us] += MobilityBonus[Piece][mob];
 
