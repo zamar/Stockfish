@@ -1093,6 +1093,25 @@ moves_loop: // When in check and at SpNode search starts from here
   }
 
 
+  bool check_is_dangerous(const Position& pos, Move move)
+  {
+    Piece pc = pos.moved_piece(move);
+    Square from = from_sq(move);
+    Square to = to_sq(move);
+    Color them = ~pos.side_to_move();
+    Square ksq = pos.king_square(them);
+    Bitboard enemies = pos.pieces(them);
+    Bitboard kingAtt = pos.attacks_from<KING>(ksq);
+    Bitboard occ = pos.pieces() ^ from ^ ksq;
+    Bitboard newAtt = pos.attacks_from(pc, to, occ);
+
+    // Checks which give opponent's king at most one escape square are dangerous
+    if (!more_than_one(kingAtt & ~(enemies | newAtt | to)))
+        return true;
+
+    return false;
+  }
+
   // qsearch() is the quiescence search function, which is called by the main
   // search function when the remaining depth is zero (or, to be more precise,
   // less than ONE_PLY).
@@ -1243,6 +1262,16 @@ moves_loop: // When in check and at SpNode search starts from here
           &&  move != ttMove
           &&  type_of(move) != PROMOTION
           &&  pos.see_sign(move) < 0)
+          continue;
+
+      // Don't search useless checks
+      if (   !PvNode
+          && !InCheck
+          &&  depth <= -1 * ONE_PLY
+          &&  givesCheck
+          &&  move != ttMove
+          && !pos.capture_or_promotion(move)
+          && !check_is_dangerous(pos, move))
           continue;
 
       // Check for legality only before to do the move
