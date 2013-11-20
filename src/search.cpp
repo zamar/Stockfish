@@ -1138,17 +1138,27 @@ moves_loop: // When in check and at SpNode search starts from here
     tte = TT.probe(posKey);
     ttMove = tte ? tte->move() : MOVE_NONE;
     ttValue = tte ? value_from_tt(tte->value(),ss->ply) : VALUE_NONE;
+    Value ttValue2 = tte ? value_from_tt(tte->shadow_value(),ss->ply) : VALUE_NONE;
     Bound ttBound = tte ? tte->bound() : BOUND_NONE;
 
     if (   tte
-        && tte->depth() >= ttDepth
-        && ttValue != VALUE_NONE // Only in case of TT access race
-        && (           PvNode ?  ttBound == BOUND_EXACT
-            : ttValue >= beta ? (ttBound &  BOUND_LOWER)
-                              : (ttBound &  BOUND_UPPER)))
+        && tte->depth() >= ttDepth)
     {
-        ss->currentMove = ttMove; // Can be MOVE_NONE
-        return ttValue;
+        if (    ttValue != VALUE_NONE // Only in case of TT access race
+            && (           PvNode ?  ttBound == BOUND_EXACT
+                : ttValue >= beta ? (ttBound &  BOUND_LOWER)
+                                  : (ttBound &  BOUND_UPPER)))
+        {
+            ss->currentMove = ttMove; // Can be MOVE_NONE
+            return ttValue;
+        }
+        else if (   ttValue2 != VALUE_NONE // Only in case of TT access race
+                 && ttValue2 >= beta ? (ttBound == BOUND_UPPER)
+                                     : (ttBound == BOUND_LOWER))
+        {
+            return ttValue;
+        }
+
     }
 
     // Evaluate the position statically
