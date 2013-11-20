@@ -600,7 +600,7 @@ namespace {
     else
     {
         eval = ss->staticEval = evaluate(pos);
-        TT.store(posKey, VALUE_NONE, BOUND_NONE, DEPTH_NONE, MOVE_NONE, ss->staticEval);
+        TT.store(posKey, VALUE_NONE, BOUND_NONE, DEPTH_NONE, MOVE_NONE, ss->staticEval, VALUE_NONE);
     }
 
     if (   !pos.captured_piece_type()
@@ -1060,7 +1060,7 @@ moves_loop: // When in check and at SpNode search starts from here
     TT.store(posKey, value_to_tt(bestValue, ss->ply),
              bestValue >= beta  ? BOUND_LOWER :
              PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-             depth, bestMove, ss->staticEval);
+             depth, bestMove, ss->staticEval, VALUE_NONE);
 
     // Quiet best move: update killers, history and countermoves
     if (    bestValue >= beta
@@ -1138,13 +1138,14 @@ moves_loop: // When in check and at SpNode search starts from here
     tte = TT.probe(posKey);
     ttMove = tte ? tte->move() : MOVE_NONE;
     ttValue = tte ? value_from_tt(tte->value(),ss->ply) : VALUE_NONE;
+    Bound ttBound = tte ? tte->bound() : BOUND_NONE;
 
     if (   tte
         && tte->depth() >= ttDepth
         && ttValue != VALUE_NONE // Only in case of TT access race
-        && (           PvNode ?  tte->bound() == BOUND_EXACT
-            : ttValue >= beta ? (tte->bound() &  BOUND_LOWER)
-                              : (tte->bound() &  BOUND_UPPER)))
+        && (           PvNode ?  ttBound == BOUND_EXACT
+            : ttValue >= beta ? (ttBound &  BOUND_LOWER)
+                              : (ttBound &  BOUND_UPPER)))
     {
         ss->currentMove = ttMove; // Can be MOVE_NONE
         return ttValue;
@@ -1166,7 +1167,7 @@ moves_loop: // When in check and at SpNode search starts from here
 
             // Can ttValue be used as a better position evaluation?
             if (ttValue != VALUE_NONE)
-                if (tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER))
+                if (ttBound & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER))
                     bestValue = ttValue;
         }
         else
@@ -1177,7 +1178,7 @@ moves_loop: // When in check and at SpNode search starts from here
         {
             if (!tte)
                 TT.store(pos.key(), value_to_tt(bestValue, ss->ply), BOUND_LOWER,
-                         DEPTH_NONE, MOVE_NONE, ss->staticEval);
+                         DEPTH_NONE, MOVE_NONE, ss->staticEval, VALUE_NONE);
 
             return bestValue;
         }
@@ -1274,7 +1275,7 @@ moves_loop: // When in check and at SpNode search starts from here
               else // Fail high
               {
                   TT.store(posKey, value_to_tt(value, ss->ply), BOUND_LOWER,
-                           ttDepth, move, ss->staticEval);
+                           ttDepth, move, ss->staticEval, ttBound == BOUND_UPPER ? ttValue : VALUE_NONE);
 
                   return value;
               }
@@ -1289,7 +1290,7 @@ moves_loop: // When in check and at SpNode search starts from here
 
     TT.store(posKey, value_to_tt(bestValue, ss->ply),
              PvNode && bestValue > oldAlpha ? BOUND_EXACT : BOUND_UPPER,
-             ttDepth, bestMove, ss->staticEval);
+             ttDepth, bestMove, ss->staticEval, ttBound == BOUND_LOWER ? ttValue : VALUE_NONE);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
@@ -1552,7 +1553,7 @@ void RootMove::insert_pv_in_tt(Position& pos) {
       tte = TT.probe(pos.key());
 
       if (!tte || tte->move() != pv[ply]) // Don't overwrite correct entries
-          TT.store(pos.key(), VALUE_NONE, BOUND_NONE, DEPTH_NONE, pv[ply], VALUE_NONE);
+          TT.store(pos.key(), VALUE_NONE, BOUND_NONE, DEPTH_NONE, pv[ply], VALUE_NONE, VALUE_NONE);
 
       assert(MoveList<LEGAL>(pos).contains(pv[ply]));
 
