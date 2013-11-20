@@ -1175,9 +1175,8 @@ moves_loop: // When in check and at SpNode search starts from here
         // Stand pat. Return immediately if static value is at least beta
         if (bestValue >= beta)
         {
-            if (!tte)
-                TT.store(pos.key(), value_to_tt(bestValue, ss->ply), BOUND_LOWER,
-                         ttDepth, MOVE_NONE, ss->staticEval);
+            TT.store(pos.key(), value_to_tt(bestValue, ss->ply), BOUND_LOWER,
+                     ttDepth, MOVE_NONE, ss->staticEval);
 
             return bestValue;
         }
