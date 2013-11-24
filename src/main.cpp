@@ -42,6 +42,10 @@ int main(int argc, char* argv[]) {
   Threads.init();
   TT.set_size(Options["Hash"]);
 
+#if defined(TUNE_CONSTANTS)
+  UCI::read_tunable_constants_from_uci(Options);
+#endif
+
   std::string args;
 
   for (int i = 1; i < argc; ++i)
