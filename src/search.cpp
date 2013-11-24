@@ -121,6 +121,8 @@ namespace {
 
 void Search::init() {
 
+  float LMR_NONPV_BASE = (float(Options["LMR_NONPV_BASE"]) + 0.5) / 1000;
+
   int d;  // depth (ONE_PLY == 2)
   int hd; // half depth (ONE_PLY == 1)
   int mc; // moveCount
@@ -129,7 +131,7 @@ void Search::init() {
   for (hd = 1; hd < 64; ++hd) for (mc = 1; mc < 64; ++mc)
   {
       double    pvRed = log(double(hd)) * log(double(mc)) / 3.0;
-      double nonPVRed = 0.33 + log(double(hd)) * log(double(mc)) / 2.25;
+      double nonPVRed = LMR_NONPV_BASE + 0.33 + log(double(hd)) * log(double(mc)) / 2.25;
       Reductions[1][1][hd][mc] = (int8_t) (   pvRed >= 1.0 ? floor(   pvRed * int(ONE_PLY)) : 0);
       Reductions[0][1][hd][mc] = (int8_t) (nonPVRed >= 1.0 ? floor(nonPVRed * int(ONE_PLY)) : 0);
 

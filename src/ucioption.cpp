@@ -86,6 +86,10 @@ void init(OptionsMap& o) {
   o["Slow Mover"]                  = Option(70, 10, 1000);
   o["UCI_Chess960"]                = Option(false);
   o["UCI_AnalyseMode"]             = Option(false, on_eval);
+
+#if defined(TUNE_CONSTANTS)
+  o["LMR_NONPV_BASE"]              = Option(0, -1000, 1000);
+#endif
 }
 
 

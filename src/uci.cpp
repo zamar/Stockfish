@@ -114,7 +114,8 @@ void UCI::loop(const string& args) {
 
 #if defined(TUNE_CONSTANTS)
           Threads.clear_cached_tables();
-          UCI::read_tunable_constants_from_uci(Options); 
+          UCI::read_tunable_constants_from_uci(Options);
+          Search::init();
 #endif
       }
 
