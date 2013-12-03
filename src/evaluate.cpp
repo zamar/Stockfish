@@ -563,7 +563,20 @@ Value do_evaluate(const Position& pos) {
         {
             // Give a bonus for a rook on a open or semi-open file
             if (ei.pi->semiopen(Us, file_of(s)))
-                score += ei.pi->semiopen(Them, file_of(s)) ? RookOpenFile : RookSemiopenFile;
+            {
+                if (!ei.pi->semiopen(Them, file_of(s)))
+                    score += RookSemiopenFile;
+                else
+                {
+                    Bitboard oppMinors = pos.pieces(Them, BISHOP) | pos.pieces(Them, KNIGHT);
+                    Bitboard oppPawnAtt = ei.attackedBy[Them][PAWN];
+
+                    if (FileBB[file_of(s)] & oppMinors & oppPawnAtt)
+                        score += RookSemiopenFile;
+                    else
+                        score += RookOpenFile;
+                }
+            }
 
             if (mob > 3 || ei.pi->semiopen(Us, file_of(s)))
                 continue;
