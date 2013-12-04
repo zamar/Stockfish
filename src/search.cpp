@@ -808,7 +808,8 @@ moves_loop: // When in check and at SpNode search starts from here
       givesCheck = pos.gives_check(move, ci);
       dangerous =   givesCheck
                  || type_of(move) != NORMAL
-                 || pos.advanced_pawn_push(move);
+                 || pos.advanced_pawn_push(move)
+                 || pos.passed_pawn_push(move);
 
       // Step 12. Extend checks
       if (givesCheck && pos.see_sign(move) >= 0)
@@ -1208,7 +1209,8 @@ moves_loop: // When in check and at SpNode search starts from here
           && !givesCheck
           &&  move != ttMove
           &&  futilityBase > -VALUE_KNOWN_WIN
-          && !pos.advanced_pawn_push(move))
+          && !pos.advanced_pawn_push(move)
+          && !pos.passed_pawn_push(move))
       {
           assert(type_of(move) != ENPASSANT); // Due to !pos.advanced_pawn_push
 
