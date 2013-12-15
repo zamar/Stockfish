@@ -63,7 +63,6 @@ struct RootMove {
   bool operator==(const Move& m) const { return pv[0] == m; }
 
   void extract_pv_from_tt(Position& pos);
-  void insert_pv_in_tt(Position& pos);
 
   Value score;
   Value prevScore;

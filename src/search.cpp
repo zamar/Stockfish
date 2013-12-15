@@ -351,11 +351,6 @@ namespace {
                 // search the already searched PV lines are preserved.
                 std::stable_sort(RootMoves.begin() + PVIdx, RootMoves.end());
 
-                // Write PV back to transposition table in case the relevant
-                // entries have been overwritten during the search.
-                for (size_t i = 0; i <= PVIdx; ++i)
-                    RootMoves[i].insert_pv_in_tt(pos);
-
                 // If search has been stopped break immediately. Sorting and
                 // writing PV back to TT is safe because RootMoves is still
                 // valid, although it refers to previous iteration.
@@ -1442,33 +1437,6 @@ void RootMove::extract_pv_from_tt(Position& pos) {
 
   while (ply) pos.undo_move(pv[--ply]);
 }
-
-
-/// RootMove::insert_pv_in_tt() is called at the end of a search iteration, and
-/// inserts the PV back into the TT. This makes sure the old PV moves are searched
-/// first, even if the old TT entries have been overwritten.
-
-void RootMove::insert_pv_in_tt(Position& pos) {
-
-  StateInfo state[MAX_PLY_PLUS_6], *st = state;
-  const TTEntry* tte;
-  int ply = 0;
-
-  do {
-      tte = TT.probe(pos.key());
-
-      if (!tte || tte->move() != pv[ply]) // Don't overwrite correct entries
-          TT.store(pos.key(), VALUE_NONE, BOUND_NONE, DEPTH_NONE, pv[ply], VALUE_NONE);
-
-      assert(MoveList<LEGAL>(pos).contains(pv[ply]));
-
-      pos.do_move(pv[ply++], *st++);
-
-  } while (pv[ply] != MOVE_NONE);
-
-  while (ply) pos.undo_move(pv[--ply]);
-}
-
 
 /// Thread::idle_loop() is where the thread is parked when it has no work to do
 
