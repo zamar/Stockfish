@@ -760,7 +760,8 @@ Value do_evaluate(const Position& pos) {
                  & ei.attackedBy[Us][ALL_PIECES];
 
     // Add a bonus according if the attacking pieces are minor or major
-    score += popcount<Full>(weakEnemies) * make_score(24, 48);
+    if (weakEnemies)
+        score += popcount<Full>(weakEnemies) * make_score(24, 48);
 
     if (Trace)
         Tracing::scores[Us][THREAT] = score;
