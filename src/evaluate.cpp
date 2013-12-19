@@ -744,7 +744,7 @@ Value do_evaluate(const Position& pos) {
 
     const Color Them = (Us == WHITE ? BLACK : WHITE);
 
-    Bitboard b, undefendedMinors, weakEnemies;
+    Bitboard undefendedMinors, weakEnemies;
     Score score = SCORE_ZERO;
 
     // Undefended minors get penalized even if they are not under attack
@@ -760,16 +760,7 @@ Value do_evaluate(const Position& pos) {
                  & ei.attackedBy[Us][ALL_PIECES];
 
     // Add a bonus according if the attacking pieces are minor or major
-    if (weakEnemies)
-    {
-        b = weakEnemies & (ei.attackedBy[Us][KNIGHT] | ei.attackedBy[Us][BISHOP]);
-        if (b)
-            score += Threat[0][type_of(pos.piece_on(lsb(b)))];
-
-        b = weakEnemies & (ei.attackedBy[Us][ROOK] | ei.attackedBy[Us][QUEEN]);
-        if (b)
-            score += Threat[1][type_of(pos.piece_on(lsb(b)))];
-    }
+    score += popcount<Full>(weakEnemies) * make_score(24, 48);
 
     if (Trace)
         Tracing::scores[Us][THREAT] = score;
