@@ -173,7 +173,6 @@ namespace {
   const Score BishopPawns      = make_score( 8, 12);
   const Score KnightPawns      = make_score( 8,  4);
   const Score MinorBehindPawn  = make_score(16,  0);
-  const Score UndefendedMinor  = make_score(25, 10);
   const Score TrappedRook      = make_score(90,  0);
   const Score Unstoppable      = make_score( 0, 20);
 
@@ -456,16 +455,23 @@ Value do_evaluate(const Position& pos) {
 
     // Increase bonus if supported by pawn, especially if the opponent has
     // no minor piece which can trade with the outpost piece.
-    if (bonus && (ei.attackedBy[Us][PAWN] & s))
+    int a = 0, b = 0;
+
+    if (ei.attackedBy[Us][PAWN] & s)
     {
+        a = 25; b = 10;
+
+        if (bonus)
+        {
         if (   !pos.pieces(Them, KNIGHT)
             && !(squares_of_color(s) & pos.pieces(Them, BISHOP)))
             bonus += bonus + bonus / 2;
         else
             bonus += bonus / 2;
+        }
     }
 
-    return make_score(bonus, bonus);
+    return make_score(bonus + a, bonus + b);
   }
 
 
@@ -744,15 +750,8 @@ Value do_evaluate(const Position& pos) {
 
     const Color Them = (Us == WHITE ? BLACK : WHITE);
 
-    Bitboard b, undefendedMinors, weakEnemies;
+    Bitboard b, weakEnemies;
     Score score = SCORE_ZERO;
-
-    // Undefended minors get penalized even if they are not under attack
-    undefendedMinors =  pos.pieces(Them, BISHOP, KNIGHT)
-                      & ~ei.attackedBy[Them][ALL_PIECES];
-
-    if (undefendedMinors)
-        score += UndefendedMinor;
 
     // Enemy pieces not defended by a pawn and under our attack
     weakEnemies =  pos.pieces(Them)
