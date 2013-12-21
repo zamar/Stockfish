@@ -762,13 +762,21 @@ Value do_evaluate(const Position& pos) {
     // Add a bonus according if the attacking pieces are minor or major
     if (weakEnemies)
     {
+        int pt1 = 0;
+        int pt2 = 0;
+
         b = weakEnemies & (ei.attackedBy[Us][KNIGHT] | ei.attackedBy[Us][BISHOP]);
+        
         while (b)
-            score += Threat[0][type_of(pos.piece_on(pop_lsb(&b)))];
+            pt1 = std::max(pt1, int(type_of(pos.piece_on(pop_lsb(&b))))); 
 
         b = weakEnemies & (ei.attackedBy[Us][ROOK] | ei.attackedBy[Us][QUEEN]);
         while (b)
-            score += Threat[1][type_of(pos.piece_on(pop_lsb(&b)))];
+            pt2 = std::max(pt2, int(type_of(pos.piece_on(pop_lsb(&b)))));
+
+        score += Threat[0][pt1];
+        score += Threat[1][pt2];
+
     }
 
     if (Trace)
