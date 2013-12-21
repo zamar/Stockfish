@@ -764,11 +764,11 @@ Value do_evaluate(const Position& pos) {
     {
         b = weakEnemies & (ei.attackedBy[Us][KNIGHT] | ei.attackedBy[Us][BISHOP]);
         if (b)
-            score += Threat[0][type_of(pos.piece_on(lsb(b)))];
+            score += Threat[0][more_than_one(b) ? 4 : type_of(pos.piece_on(lsb(b)))];
 
         b = weakEnemies & (ei.attackedBy[Us][ROOK] | ei.attackedBy[Us][QUEEN]);
         if (b)
-            score += Threat[1][type_of(pos.piece_on(lsb(b)))];
+            score += Threat[1][more_than_one(b) ? 4 : type_of(pos.piece_on(lsb(b)))];
     }
 
     if (Trace)
