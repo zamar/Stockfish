@@ -644,7 +644,7 @@ Value do_evaluate(const Position& pos) {
         && ( attackUnits = std::min(20, (ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them]) / 2)
                          + 3 * (ei.kingAdjacentZoneAttacksCount[Them] )
                          + KingExposed[relative_square(Us, ksq)]
-                         - mg_value(score) / 32) > 0)
+                         - mg_value(score) / 32) > -3)
     {
         // Find the attacked squares around the king which have no defenders
         // apart from the king itself
