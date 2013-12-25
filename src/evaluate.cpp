@@ -640,7 +640,11 @@ Value do_evaluate(const Position& pos) {
     Score score = ei.pi->king_safety<Us>(pos, ksq);
 
     // Main king safety evaluation
-    if (ei.kingRing[Us])
+    if (   ei.kingRing[Us]
+        && ( attackUnits = std::min(20, (ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them]) / 2)
+                         + 3 * (ei.kingAdjacentZoneAttacksCount[Them] )
+                         + KingExposed[relative_square(Us, ksq)]
+                         - mg_value(score) / 32) > 0)
     {
         // Find the attacked squares around the king which have no defenders
         // apart from the king itself
@@ -650,15 +654,7 @@ Value do_evaluate(const Position& pos) {
                         | ei.attackedBy[Us][BISHOP] | ei.attackedBy[Us][ROOK]
                         | ei.attackedBy[Us][QUEEN]);
 
-        // Initialize the 'attackUnits' variable, which is used later on as an
-        // index to the KingDanger[] array. The initial value is based on the
-        // number and types of the enemy's attacking pieces, the number of
-        // attacked and undefended squares around our king, the square of the
-        // king, and the quality of the pawn shelter.
-        attackUnits =  std::min(20, (ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them]) / 2)
-                     + 3 * (ei.kingAdjacentZoneAttacksCount[Them] + popcount<Max15>(undefended))
-                     + KingExposed[relative_square(Us, ksq)]
-                     - mg_value(score) / 32;
+        attackUnits += + popcount<Max15>(undefended);
 
         // Analyse the enemy's safe queen contact checks. Firstly, find the
         // undefended squares around the king that are attacked by the enemy's
