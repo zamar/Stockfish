@@ -1130,8 +1130,7 @@ moves_loop: // When in check and at SpNode search starts from here
     // Decide whether or not to include checks: this fixes also the type of
     // TT entry depth that we are going to use. Note that in qsearch we use
     // only two types of depth in TT: DEPTH_QS_CHECKS or DEPTH_QS_NO_CHECKS.
-    ttDepth = InCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS
-                                                  : DEPTH_QS_NO_CHECKS;
+    ttDepth = DEPTH_ZERO;
 
     // Transposition table lookup
     posKey = pos.key();

@@ -98,9 +98,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const HistoryStats&
   if (p.checkers())
       stage = EVASION;
 
-  else if (d > DEPTH_QS_NO_CHECKS)
-      stage = QSEARCH_0;
-
   else if (d > DEPTH_QS_RECAPTURES)
   {
       stage = QSEARCH_1;
