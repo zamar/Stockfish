@@ -184,6 +184,24 @@ namespace {
         }
     }
 
+    // Center pawns
+    e->FrontBlockedCenterPawn[Us] = SQ_NONE;
+
+    Bitboard ourCenterPawns = ourPawns & (FileDBB | FileEBB);
+
+    if (more_than_one(ourCenterPawns))
+    {
+        Square frontSq = frontmost_sq(Us, ourCenterPawns);
+        Square backSq  = backmost_sq (Us, ourCenterPawns);
+
+        if (   (backSq + (Us == WHITE ? 7 : -7) == frontSq || backSq + (Us == WHITE ? 9 : -9) == frontSq)
+            && (theirPawns & forward_bb(Us, frontSq))
+            && (theirPawns & forward_bb(Us, backSq)))
+        {
+             e->FrontBlockedCenterPawn[Us] = frontSq;
+        }
+    }
+
     // In endgame it's better to have pawns on both wings. So give a bonus according
     // to file distance between left and right outermost pawns.
     if (pos.count<PAWN>(Us) > 1)
