@@ -292,9 +292,13 @@ Score Entry::update_safety(const Position& pos, Square ksq) {
   castlingFlags[Us] = pos.can_castle(Us);
   minKPdistance[Us] = 0;
 
-  Bitboard pawns = pos.pieces(Us, PAWN);
-  if (pawns)
-      while (!(DistanceRingsBB[ksq][minKPdistance[Us]++] & pawns)) {}
+  const Color Them = ~Us;
+
+  Bitboard ourPawns = pos.pieces(Us, PAWN);
+  Bitboard theirPawns = pos.pieces(Them, PAWN);
+
+  if (ourPawns)
+      while (!(DistanceRingsBB[ksq][minKPdistance[Us]++] & ourPawns)) {}
 
   if (relative_rank(Us, ksq) > RANK_4)
       return kingSafety[Us] = make_score(0, -16 * minKPdistance[Us]);
@@ -308,7 +312,32 @@ Score Entry::update_safety(const Position& pos, Square ksq) {
   if (pos.can_castle(make_castling_flag(Us, QUEEN_SIDE)))
       bonus = std::max(bonus, shelter_storm<Us>(pos, relative_square(Us, SQ_C1)));
 
-  return kingSafety[Us] = make_score(bonus, -16 * minKPdistance[Us]);
+  // Handling of closed position
+  Value penalty = Value(0);
+
+  // Only if center is fully blocked (e.g. white d4, e5 and black d5, e6)
+  if (   FrontBlockedCenterPawn[Us]   != SQ_NONE
+      && FrontBlockedCenterPawn[Them] != SQ_NONE)
+  {
+      Square psq = FrontBlockedCenterPawn[Them]; // Opponent's most dangerous pawn (e.g. in French for black: e5)
+
+      // If center is blocked, and our opponent (white) has pawns on d4, e5 or on d3, e4
+      // then casling on the king side is potentially dangerous
+      if (   (file_of(psq) >= FILE_E && file_of(ksq) >= FILE_F)
+          || (file_of(psq) <= FILE_D && file_of(ksq) <= FILE_C))
+      {
+          // Opponent has pawns on d4, e5. This structure is risky (long term mating threats), penalty
+          if (relative_rank(Them, psq) == RANK_5)
+              penalty = Value(24);
+
+          // Opponent has pawns on d3, e4, f5. This King's Indian style structure is very risky, bigger penalty.
+          if (    relative_rank(Them, psq) == RANK_4
+              && (theirPawns & pawn_attack_span(Them, psq)))
+              penalty = Value(48);
+      }
+  }
+
+  return kingSafety[Us] = make_score(bonus - penalty, -16 * minKPdistance[Us]);
 }
 
 // Explicit template instantiation
