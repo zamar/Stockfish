@@ -184,6 +184,24 @@ namespace {
         }
     }
 
+    // Center pawns
+    e->FrontBlockedCenterPawn[Us] = SQ_NONE;
+
+    Bitboard ourCenterPawns = ourPawns & (FileDBB | FileEBB);
+
+    if (more_than_one(ourCenterPawns))
+    {
+        Square frontSq = frontmost_sq(Us, ourCenterPawns);
+        Square backSq  = backmost_sq (Us, ourCenterPawns);
+
+        if (   (backSq + (Us == WHITE ? 7 : -7) == frontSq || backSq + (Us == WHITE ? 9 : -9) == frontSq)
+            && (theirPawns & forward_bb(Us, frontSq))
+            && (theirPawns & forward_bb(Us, backSq)))
+        {
+             e->FrontBlockedCenterPawn[Us] = frontSq;
+        } 
+    }
+
     // In endgame it's better to have pawns on both wings. So give a bonus according
     // to file distance between left and right outermost pawns.
     if (pos.count<PAWN>(Us) > 1)
@@ -270,6 +288,8 @@ Value Entry::shelter_storm(const Position& pos, Square ksq) {
 template<Color Us>
 Score Entry::update_safety(const Position& pos, Square ksq) {
 
+  const Color Them = ~Us;
+
   kingSquares[Us] = ksq;
   castlingFlags[Us] = pos.can_castle(Us);
   minKPdistance[Us] = 0;
@@ -290,7 +310,18 @@ Score Entry::update_safety(const Position& pos, Square ksq) {
   if (pos.can_castle(make_castling_flag(Us, QUEEN_SIDE)))
       bonus = std::max(bonus, shelter_storm<Us>(pos, relative_square(Us, SQ_C1)));
 
-  return kingSafety[Us] = make_score(bonus, -16 * minKPdistance[Us]);
+  // Handling of closed position
+  Value penalty = Value(0);
+
+  if (   FrontBlockedCenterPawn[Us]   != SQ_NONE
+      && FrontBlockedCenterPawn[Them] != SQ_NONE)
+  {
+      if (   (file_of(FrontBlockedCenterPawn[Them]) >= FILE_E && file_of(ksq) >= FILE_F)
+          || (file_of(FrontBlockedCenterPawn[Them]) <= FILE_D && file_of(ksq) <= FILE_C))
+          penalty = Value(24);
+  }
+
+  return kingSafety[Us] = make_score(bonus - penalty, -16 * minKPdistance[Us]);
 }
 
 // Explicit template instantiation
