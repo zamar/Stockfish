@@ -56,7 +56,7 @@ struct Entry {
   Score update_safety(const Position& pos, Square ksq);
 
   template<Color Us>
-  Value shelter_storm(const Position& pos, Square ksq);
+  Value shelter_storm(const Position& pos, Square ksq, bool stormDanger);
 
   Key key;
   Bitboard passedPawns[COLOR_NB];

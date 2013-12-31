@@ -255,7 +255,7 @@ Entry* probe(const Position& pos, Table& entries) {
 /// the king is on, as well as the two adjacent files.
 
 template<Color Us>
-Value Entry::shelter_storm(const Position& pos, Square ksq) {
+Value Entry::shelter_storm(const Position& pos, Square ksq, bool stormDanger) {
 
   const Color Them = (Us == WHITE ? BLACK : WHITE);
 
@@ -270,11 +270,11 @@ Value Entry::shelter_storm(const Position& pos, Square ksq) {
   {
       b = ourPawns & file_bb(f);
       rkUs = b ? relative_rank(Us, backmost_sq(Us, b)) : RANK_1;
-      safety -= ShelterWeakness[rkUs];
+      safety -= ShelterWeakness[rkUs] * (stormDanger ? 2 : 1);
 
       b  = theirPawns & file_bb(f);
       rkThem = b ? relative_rank(Us, frontmost_sq(Them, b)) : RANK_1;
-      safety -= StormDanger[rkUs == RANK_1 ? 0 : rkThem == rkUs + 1 ? 2 : 1][rkThem];
+      safety -= StormDanger[rkUs == RANK_1 ? 0 : rkThem == rkUs + 1 ? 2 : 1][rkThem] * (stormDanger ? 2 : 1);
   }
 
   return safety;
@@ -288,6 +288,8 @@ Value Entry::shelter_storm(const Position& pos, Square ksq) {
 template<Color Us>
 Score Entry::update_safety(const Position& pos, Square ksq) {
 
+  const Color Them = ~Us;
+
   kingSquares[Us] = ksq;
   castlingFlags[Us] = pos.can_castle(Us);
   minKPdistance[Us] = 0;
@@ -299,14 +301,40 @@ Score Entry::update_safety(const Position& pos, Square ksq) {
   if (relative_rank(Us, ksq) > RANK_4)
       return kingSafety[Us] = make_score(0, -16 * minKPdistance[Us]);
 
-  Value bonus = shelter_storm<Us>(pos, ksq);
+  bool stormDanger =
+     (   FrontBlockedCenterPawn[Us]   != SQ_NONE
+      && FrontBlockedCenterPawn[Them] != SQ_NONE)
+      && (   (file_of(FrontBlockedCenterPawn[Them]) >= FILE_E && file_of(ksq) >= FILE_F)
+          || (file_of(FrontBlockedCenterPawn[Them]) <= FILE_D && file_of(ksq) <= FILE_C));
+
+  Value bonus = shelter_storm<Us>(pos, ksq, stormDanger);
 
   // If we can castle use the bonus after the castling if it is bigger
   if (pos.can_castle(make_castling_flag(Us, KING_SIDE)))
-      bonus = std::max(bonus, shelter_storm<Us>(pos, relative_square(Us, SQ_G1)));
+  {
+      ksq = relative_square(Us, SQ_G1);
+
+      stormDanger =
+         (   FrontBlockedCenterPawn[Us]   != SQ_NONE
+          && FrontBlockedCenterPawn[Them] != SQ_NONE)
+          && (   (file_of(FrontBlockedCenterPawn[Them]) >= FILE_E && file_of(ksq) >= FILE_F)
+              || (file_of(FrontBlockedCenterPawn[Them]) <= FILE_D && file_of(ksq) <= FILE_C));
+
+      bonus = std::max(bonus, shelter_storm<Us>(pos, ksq, stormDanger));
+  }
 
   if (pos.can_castle(make_castling_flag(Us, QUEEN_SIDE)))
-      bonus = std::max(bonus, shelter_storm<Us>(pos, relative_square(Us, SQ_C1)));
+  {
+      ksq = relative_square(Us, SQ_C1);
+
+      stormDanger =
+         (   FrontBlockedCenterPawn[Us]   != SQ_NONE
+          && FrontBlockedCenterPawn[Them] != SQ_NONE)
+          && (   (file_of(FrontBlockedCenterPawn[Them]) >= FILE_E && file_of(ksq) >= FILE_F)
+              || (file_of(FrontBlockedCenterPawn[Them]) <= FILE_D && file_of(ksq) <= FILE_C));
+
+      bonus = std::max(bonus, shelter_storm<Us>(pos, ksq, stormDanger));
+  }
 
   return kingSafety[Us] = make_score(bonus, -16 * minKPdistance[Us]);
 }
