@@ -449,6 +449,7 @@ namespace {
     }
   }
 
+  double null_red(int delta) { return 10.0 * (1.0 / (1.0 + exp(-delta / 500.0)) - 0.5); }
 
   // search<>() is the main search function for both PV and non-PV nodes and for
   // normal and SplitPoint nodes. When called just after a split point the search
@@ -633,7 +634,7 @@ namespace {
         // Null move dynamic reduction based on depth and value
         Depth R =  3 * ONE_PLY
                  + depth / (2 * ONE_PLY)
-                 + int(eval - beta) / PawnValueMg * ONE_PLY;
+                 + Depth(int(null_red(eval - beta)) * int(ONE_PLY));
 
         pos.do_null_move(st);
         (ss+1)->skipNullMove = true;
