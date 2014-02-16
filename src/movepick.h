@@ -45,6 +45,13 @@ struct Stats {
   const T* operator[](Piece p) const { return table[p]; }
   void clear() { std::memset(table, 0, sizeof(table)); }
 
+  void init_with_piece_values()
+  {
+    for (Piece p = NO_PIECE; p < PIECE_NB; ++p) 
+        for (Square sq = SQ_A1; sq < SQ_NONE; ++sq)
+            table[p][sq] = PieceValue[EG][p];
+  }
+
   void update(Piece p, Square to, Move m) {
 
     if (m == table[p][to].first)

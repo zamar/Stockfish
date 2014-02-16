@@ -83,6 +83,7 @@ namespace {
   Value DrawValue[COLOR_NB];
   HistoryStats History;
   GainsStats Gains;
+  GainsStats CaptureGains;
   MovesStats Countermoves, Followupmoves;
 
   template <NodeType NT>
@@ -303,6 +304,7 @@ namespace {
     TT.new_search();
     History.clear();
     Gains.clear();
+    CaptureGains.init_with_piece_values();
     Countermoves.clear();
     Followupmoves.clear();
 
@@ -581,14 +583,16 @@ namespace {
         TT.store(posKey, VALUE_NONE, BOUND_NONE, DEPTH_NONE, MOVE_NONE, ss->staticEval);
     }
 
-    if (   !pos.captured_piece_type()
-        &&  ss->staticEval != VALUE_NONE
+    if (   ss->staticEval != VALUE_NONE
         && (ss-1)->staticEval != VALUE_NONE
         && (move = (ss-1)->currentMove) != MOVE_NULL
         &&  type_of(move) == NORMAL)
     {
         Square to = to_sq(move);
-        Gains.update(pos.piece_on(to), to, -(ss-1)->staticEval - ss->staticEval);
+        if (!pos.captured_piece_type())
+            Gains.update(pos.piece_on(to), to, -(ss-1)->staticEval - ss->staticEval);
+        else
+            CaptureGains.update(make_piece(pos.side_to_move(), pos.captured_piece_type()), to, -(ss-1)->staticEval - ss->staticEval);
     }
 
     // Step 6. Razoring (skipped when in check)
@@ -1167,7 +1171,7 @@ moves_loop: // When in check and at SpNode search starts from here
       {
           assert(type_of(move) != ENPASSANT); // Due to !pos.advanced_pawn_push
 
-          futilityValue = futilityBase + PieceValue[EG][pos.piece_on(to_sq(move))];
+          futilityValue = futilityBase + CaptureGains[pos.piece_on(to_sq(move))][to_sq(move)];
 
           if (futilityValue < beta)
           {
