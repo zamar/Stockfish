@@ -34,7 +34,7 @@ namespace {
   // Polynomial material balance parameters
 
   //                                  pair  pawn knight bishop rook queen
-  const int LinearCoefficients[6] = { 1852, -162, -1122, -183,  249, -52 };
+  const int LinearCoefficients[6] = { 1852, -162, -1122, -183,  249, -189 };
 
   const int QuadraticCoefficientsSameColor[][PIECE_TYPE_NB] = {
     // pair pawn knight bishop rook queen
@@ -43,7 +43,7 @@ namespace {
     {  35,  271,  -4                    }, // Knight
     {   0,  105,   4,    0              }, // Bishop
     { -27,   -2,  46,   100,  -141      }, // Rook
-    {  58,   29,  83,   148,  -163,   0 }  // Queen
+    { -83,   45, 145,   161,  -209,   0 }  // Queen
   };
 
   const int QuadraticCoefficientsOppositeColor[][PIECE_TYPE_NB] = {
@@ -54,7 +54,7 @@ namespace {
     {  10,   62,   0                    }, // Knight      OUR PIECES
     {  57,   64,  39,     0             }, // Bishop
     {  50,   40,  23,   -22,    0       }, // Rook
-    { 106,  101,   3,   151,  171,    0 }  // Queen
+    { 124,  109, -35,   109,  196,    0 }  // Queen
   };
 
   // Endgame evaluation and scaling functions are accessed directly and not through
