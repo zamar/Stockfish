@@ -486,6 +486,10 @@ Value do_evaluate(const Position& pos) {
                    | ei.attackedBy[Them][BISHOP]
                    | ei.attackedBy[Them][ROOK]);
 
+        if (Pt == ROOK)
+            b &= ~(  ei.attackedBy[Them][KNIGHT]
+                   | ei.attackedBy[Them][BISHOP]);
+
         int mob = Pt != QUEEN ? popcount<Max15>(b & mobilityArea)
                               : popcount<Full >(b & mobilityArea);
 
