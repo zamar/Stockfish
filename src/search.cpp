@@ -990,7 +990,8 @@ moves_loop: // When in check and at SpNode search starts from here
       // Step 19. Check for splitting the search
       if (   !SpNode
           &&  depth >= Threads.minimumSplitDepth
-          &&  Threads.available_slave(thisThread)
+          &&  (   !thisThread->activeSplitPoint
+               || !thisThread->activeSplitPoint->allowLatejoin)
           &&  thisThread->splitPointsSize < MAX_SPLITPOINTS_PER_THREAD)
       {
           assert(bestValue > -VALUE_INFINITE && bestValue < beta);
