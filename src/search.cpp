@@ -989,6 +989,7 @@ moves_loop: // When in check and at SpNode search starts from here
 
       // Step 19. Check for splitting the search
       if (   !SpNode
+          &&  Threads.size() >= 2
           &&  depth >= Threads.minimumSplitDepth
           &&  (   !thisThread->activeSplitPoint
                || !thisThread->activeSplitPoint->allowLatejoin)
