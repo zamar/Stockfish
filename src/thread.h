@@ -69,6 +69,7 @@ struct SplitPoint {
   Value beta;
   int nodeType;
   bool cutNode;
+  int ply;
 
   // Const pointers to shared data
   MovePicker* movePicker;

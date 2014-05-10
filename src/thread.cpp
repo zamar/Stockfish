@@ -280,6 +280,7 @@ void Thread::split(Position& pos, const Stack* ss, Value alpha, Value beta, Valu
   sp.beta = beta;
   sp.nodeType = nodeType;
   sp.cutNode = cutNode;
+  sp.ply = ss->ply;
   sp.movePicker = movePicker;
   sp.moveCount = moveCount;
   sp.pos = &pos;
