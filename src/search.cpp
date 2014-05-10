@@ -1553,33 +1553,46 @@ void Thread::idle_loop() {
           // Try to late join to another split point if none of its slaves has
           // already finished.
           if (Threads.size() > 2)
+          {
+              // Find the ideal available split point
+              SplitPoint *bestSp = NULL;
+              int bestSpPly = INT_MAX;
+              int bestSpIdx;
+
               for (size_t i = 0; i < Threads.size(); ++i)
               {
                   int size = Threads[i]->splitPointsSize; // Local copy
                   sp = size ? &Threads[i]->splitPoints[size - 1] : NULL;
 
                   if (   sp
+                      && sp->ply < bestSpPly
                       && sp->allSlavesSearching
                       && available_to(Threads[i]))
                   {
-                      // Recheck the conditions under lock protection
-                      Threads.mutex.lock();
-                      sp->mutex.lock();
-
-                      if (   sp->allSlavesSearching
-                          && available_to(Threads[i]))
-                      {
-                           sp->slavesMask.set(idx);
-                           activeSplitPoint = sp;
-                           searching = true;
-                      }
-
-                      sp->mutex.unlock();
-                      Threads.mutex.unlock();
-
-                      break; // Just a single attempt
+                      bestSp = sp;
+                      bestSpPly = sp->ply;
+                      bestSpIdx = i;
                   }
               }
+
+              // Recheck the conditions under lock protection
+              if (bestSp)
+              {
+                  Threads.mutex.lock();
+                  bestSp->mutex.lock();
+
+                  if (   bestSp->allSlavesSearching
+                      && available_to(Threads[bestSpIdx]))
+                  {
+                       bestSp->slavesMask.set(idx);
+                       activeSplitPoint = bestSp;
+                       searching = true;
+                  }
+
+                  bestSp->mutex.unlock();
+                  Threads.mutex.unlock();
+              }
+          }
       }
 
       // If this thread is the master of a split point and all slaves have finished
