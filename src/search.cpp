@@ -987,7 +987,12 @@ moves_loop: // When in check and at SpNode search starts from here
           &&  Threads.size() >= 2
           &&  depth >= Threads.minimumSplitDepth
           &&  (   !thisThread->activeSplitPoint
-               || !thisThread->activeSplitPoint->allSlavesSearching)
+               || !thisThread->activeSplitPoint->allSlavesSearching
+               || (   ss->ply <= thisThread->activeSplitPoint->ss->ply + 2
+                   && (   !thisThread->activeSplitPoint->parentSplitPoint
+                       || !thisThread->activeSplitPoint->parentSplitPoint->allSlavesSearching)
+                  )
+              )
           &&  thisThread->splitPointsSize < MAX_SPLITPOINTS_PER_THREAD)
       {
           assert(bestValue > -VALUE_INFINITE && bestValue < beta);
