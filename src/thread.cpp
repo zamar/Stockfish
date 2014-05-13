@@ -105,14 +105,14 @@ bool Thread::cutoff_occurred() const {
 }
 
 
-// Thread::available_to() checks whether the thread is available to help the
-// thread 'master' at a split point. An obvious requirement is that thread must
+// Thread::available_to() checks whether the thread is available to join 
+// to a split point. An obvious requirement is that thread must
 // be idle. With more than two threads, this is not sufficient: If the thread is
 // the master of some split point, it is only available as a slave to the slaves
 // which are busy searching the split point at the top of slave's split point
 // stack (the "helpful master concept" in YBWC terminology).
 
-bool Thread::available_to(const Thread* master) const {
+bool Thread::available_to(const SplitPoint* sp) const {
 
   if (searching)
       return false;
@@ -123,7 +123,16 @@ bool Thread::available_to(const Thread* master) const {
 
   // No split points means that the thread is available as a slave for any
   // other thread otherwise apply the "helpful master" concept if possible.
-  return !size || splitPoints[size - 1].slavesMask.test(master->idx);
+  if (!size)
+      return true;
+
+  const SplitPoint *top = &splitPoints[size - 1];
+
+  while ((sp = sp->parentSplitPoint))
+      if (sp == top)
+          return true;
+
+  return false;
 }
 
 
@@ -234,12 +243,12 @@ void ThreadPool::read_uci_options() {
 
 
 // available_slave() tries to find an idle thread which is available as a slave
-// for the thread 'master'.
+// for the split point.
 
-Thread* ThreadPool::available_slave(const Thread* master) const {
+Thread* ThreadPool::available_slave(const SplitPoint* sp) const {
 
   for (const_iterator it = begin(); it != end(); ++it)
-      if ((*it)->available_to(master))
+      if ((*it)->available_to(sp))
           return *it;
 
   return NULL;
@@ -298,7 +307,7 @@ void Thread::split(Position& pos, const Stack* ss, Value alpha, Value beta, Valu
   activePosition = NULL;
 
   if (!Fake)
-      for (Thread* slave; (slave = Threads.available_slave(this)) != NULL; )
+      for (Thread* slave; (slave = Threads.available_slave(&sp)) != NULL; )
       {
           sp.slavesMask.set(slave->idx);
           slave->activeSplitPoint = &sp;

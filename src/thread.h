@@ -115,7 +115,7 @@ struct Thread : public ThreadBase {
   Thread();
   virtual void idle_loop();
   bool cutoff_occurred() const;
-  bool available_to(const Thread* master) const;
+  bool available_to(const SplitPoint* sp) const;
 
   template <bool Fake>
   void split(Position& pos, const Search::Stack* ss, Value alpha, Value beta, Value* bestValue, Move* bestMove,
@@ -162,7 +162,7 @@ struct ThreadPool : public std::vector<Thread*> {
 
   MainThread* main() { return static_cast<MainThread*>((*this)[0]); }
   void read_uci_options();
-  Thread* available_slave(const Thread* master) const;
+  Thread* available_slave(const SplitPoint* sp) const;
   void wait_for_think_finished();
   void start_thinking(const Position&, const Search::LimitsType&, Search::StateStackPtr&);
 

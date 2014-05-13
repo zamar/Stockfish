@@ -1557,14 +1557,14 @@ void Thread::idle_loop() {
 
                   if (   sp
                       && sp->allSlavesSearching
-                      && available_to(Threads[i]))
+                      && available_to(sp))
                   {
                       // Recheck the conditions under lock protection
                       Threads.mutex.lock();
                       sp->mutex.lock();
 
                       if (   sp->allSlavesSearching
-                          && available_to(Threads[i]))
+                          && available_to(sp))
                       {
                            sp->slavesMask.set(idx);
                            activeSplitPoint = sp;
