@@ -375,6 +375,10 @@ namespace {
                 else
                     Signals.stop = true;
             }
+
+            // Test
+            if (Time::now() - SearchTime <= int(TimeMgr.available_time() * 0.25))
+                depth++;
         }
     }
   }
