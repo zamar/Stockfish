@@ -395,6 +395,7 @@ install: strip
 	-mkdir -p -m 755 $(BINDIR)
 	-mkdir -p -m 755 $(PLUGINDIR)
 	-mkdir -p -m 755 $(PLUGINUCIDIR)
+	-mkdir -p -m 755 $(PLUGINLOGODIR)
 	-install -m 755 $(EXE) $(BINDIR)
 	-install -m 644 stockfish.eng $(PLUGINUCIDIR)
 	-install -m 644 stockfish.png $(PLUGINLOGODIR)
