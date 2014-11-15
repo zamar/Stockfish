@@ -28,11 +28,10 @@ EXE = stockfish
 
 ### Installation dir definitions
 PREFIX = /usr/local
-# Haiku has a non-standard filesystem layout
-ifeq ($(UNAME),Haiku)
-	PREFIX=/boot/system/non-packaged
-endif
 BINDIR = $(PREFIX)/bin
+PLUGINDIR = $(PREFIX)/share/games/plugins
+PLUGINUCIDIR = $(PLUGINDIR)/uci
+PLUGINLOGODIR = $(PLUGINDIR)/logos
 
 ### Built-in benchmark for pgo-builds
 PGOBENCH = ./$(EXE) bench 16 1 1 default time
@@ -392,10 +391,13 @@ profile-build:
 strip:
 	strip $(EXE)
 
-install:
+install: strip
 	-mkdir -p -m 755 $(BINDIR)
-	-cp $(EXE) $(BINDIR)
-	-strip $(BINDIR)/$(EXE)
+	-mkdir -p -m 755 $(PLUGINDIR)
+	-mkdir -p -m 755 $(PLUGINUCIDIR)
+	-install -m 755 $(EXE) $(BINDIR)
+	-install -m 644 stockfish.eng $(PLUGINUCIDIR)
+	-install -m 644 stockfish.png $(PLUGINLOGODIR)
 
 clean:
 	$(RM) $(EXE) $(EXE).exe *.o .depend *~ core bench.txt *.gcda
