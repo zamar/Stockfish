@@ -172,30 +172,6 @@ ifeq ($(COMP),clang)
 	CXXFLAGS += -pedantic -Wno-long-long -Wextra -Wshadow
 endif
 
-profile_prepare = gcc-profile-prepare
-profile_make = gcc-profile-make
-profile_use = gcc-profile-use
-profile_clean = gcc-profile-clean
-
-ifeq ($(comp),icc)
-	profile_prepare = icc-profile-prepare
-	profile_make = icc-profile-make
-	profile_use = icc-profile-use
-	profile_clean = icc-profile-clean
-endif
-
-ifeq ($(comp),clang)
-	profile_prepare = clang-profile-prepare
-	profile_make = clang-profile-make
-	profile_use = clang-profile-use
-	profile_clean = clang-profile-clean
-endif
-
-ifeq ($(UNAME),Darwin)
-	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.6
-	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.6
-endif
-
 ### On mingw use Windows threads, otherwise POSIX
 ifneq ($(comp),mingw)
 	# On Android Bionic's C library comes with its own pthread implementation bundled in
@@ -370,11 +346,11 @@ profile-build:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) config-sanity
 	@echo ""
 	@echo "Step 0/4. Preparing for profile build."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_prepare)
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(comp)-profile-prepare
 	@echo ""
 	@echo "Step 1/4. Building executable for benchmark ..."
 	@touch *.cpp *.h syzygy/*.cpp syzygy/*.h
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(comp)-profile-make
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
 	@$(PGOBENCH) > /dev/null
@@ -384,10 +360,10 @@ profile-build:
 # "internal compiler error" for gcc versions 4.7.x
 	@rm ucioption.gc*
 	@touch *.cpp *.h syzygy/*.cpp syzygy/*.h
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_use)
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(comp)-profile-use
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_clean)
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(comp)-profile-clean
 
 strip:
 	strip $(EXE)
@@ -461,6 +437,11 @@ gcc-profile-use:
 
 gcc-profile-clean:
 	@rm -rf *.gcda *.gcno syzygy/*.gcda syzygy/*.gcno bench.txt
+
+mingw-profile-prepare: gcc-profile-prepare
+mingw-profile-make: gcc-profile-make
+mingw-profile-use: gcc-profile-use
+mingw-profile-clean: gcc-profile-clean
 
 clang-profile-prepare:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) clang-profile-clean
