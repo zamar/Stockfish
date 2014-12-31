@@ -1560,6 +1560,11 @@ void Thread::idle_loop() {
           // Try to late join to another split point if none of its slaves has
           // already finished.
           if (Threads.size() > 2)
+          {
+              SplitPoint *bestSp = NULL;
+              int bestThread = 0;
+              Depth bestDepth = DEPTH_ZERO;
+
               for (size_t i = 0; i < Threads.size(); ++i)
               {
                   const int size = Threads[i]->splitPointsSize; // Local copy
@@ -1567,26 +1572,35 @@ void Thread::idle_loop() {
 
                   if (   sp
                       && sp->allSlavesSearching
-                      && available_to(Threads[i]))
+                      && available_to(Threads[i])
+                      && sp->depth > bestDepth)
                   {
-                      // Recheck the conditions under lock protection
-                      Threads.mutex.lock();
-                      sp->mutex.lock();
-
-                      if (   sp->allSlavesSearching
-                          && available_to(Threads[i]))
-                      {
-                           sp->slavesMask.set(idx);
-                           activeSplitPoint = sp;
-                           searching = true;
-                      }
-
-                      sp->mutex.unlock();
-                      Threads.mutex.unlock();
-
-                      break; // Just a single attempt
+                      bestSp = sp;
+                      bestThread = i;
+                      bestDepth = sp->depth;
                   }
               }
+
+              if (bestSp)
+              {
+                  sp = bestSp;
+ 
+                  // Recheck the conditions under lock protection
+                  Threads.mutex.lock();
+                  sp->mutex.lock();
+
+                  if (   sp->allSlavesSearching
+                      && available_to(Threads[bestThread]))
+                  {
+                      sp->slavesMask.set(idx);
+                      activeSplitPoint = sp;
+                      searching = true;
+                  }
+
+                  sp->mutex.unlock();
+                  Threads.mutex.unlock();
+              }
+          }
       }
 
       // Grab the lock to avoid races with Thread::notify_one()
