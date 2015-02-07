@@ -475,6 +475,11 @@ namespace {
         if (b)
             attackUnits += KnightCheck * popcount<Max15>(b);
 
+        // Pawn double attacks to king ring
+        b = ei.pi->pawn_double_attacks(Them) & ei.kingRing[Us];
+        if (b)
+            attackUnits += 14 * popcount<Max15>(b);
+
         // Finally, extract the king danger score from the KingDanger[]
         // array and subtract the score from evaluation.
         score -= KingDanger[std::max(std::min(attackUnits, 399), 0)];
