@@ -67,7 +67,7 @@ namespace {
     (FileDBB | FileEBB) & (Rank4BB | Rank3BB | Rank2BB)
   };
 
-  const Score CenterBindBonus = S(16, 0);
+  const Score CenterBindBonus = S(16, 16);
 
   // Weakness of our pawn shelter in front of the king by [distance from edge][rank]
   const Value ShelterWeakness[][RANK_NB] = {
