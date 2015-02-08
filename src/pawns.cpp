@@ -63,8 +63,8 @@ namespace {
 
   // Center Bind Bonus: Two pawns controlling the same central square
   const Bitboard CenterBindMask[] = {
-    (FileDBB | FileEBB) & (Rank5BB | Rank6BB | Rank7BB),
-    (FileDBB | FileEBB) & (Rank4BB | Rank3BB | Rank2BB)
+    (FileCBB | FileDBB | FileEBB | FileFBB) & (Rank5BB | Rank6BB | Rank7BB),
+    (FileCBB | FileDBB | FileEBB | FileFBB) & (Rank4BB | Rank3BB | Rank2BB)
   };
 
   const Score CenterBindBonus = S(16, 0);
