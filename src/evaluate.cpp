@@ -496,8 +496,8 @@ namespace {
 
     const Color Them        = (Us == WHITE ? BLACK    : WHITE);
     const Square Up         = (Us == WHITE ? DELTA_N  : DELTA_S);
-    const Square Left       = (Us == WHITE ? DELTA_NW : DELTA_SE);
-    const Square Right      = (Us == WHITE ? DELTA_NE : DELTA_SW);
+    const Square LeftUp     = (Us == WHITE ? DELTA_NW : DELTA_SE);
+    const Square RightUp    = (Us == WHITE ? DELTA_NE : DELTA_SW);
     const Bitboard TRank2BB = (Us == WHITE ? Rank2BB  : Rank7BB);
     const Bitboard TRank7BB = (Us == WHITE ? Rank7BB  : Rank2BB);
 
@@ -560,7 +560,7 @@ namespace {
         score += popcount<Full>(b) * PawnSafePush;
 
     // Add another bonus if the pawn push attacks an enemy piece
-    b =  (shift_bb<Left>(b) | shift_bb<Right>(b))
+    b =  (shift_bb<LeftUp>(b) | shift_bb<RightUp>(b))
        &  pos.pieces(Them)
        & ~ei.attackedBy[Us][PAWN];
 
