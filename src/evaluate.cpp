@@ -555,11 +555,10 @@ namespace {
     epDefenders = pos.pieces(Them, PAWN) & TRank4BB;
 
     b = pos.pieces(Us, PAWN) & ~TRank7BB;
-    b = shift_bb<Up>(b | (shift_bb<Up>(b & TRank2BB) & ~pos.pieces()));
+    b = shift_bb<Up>(b) | (shift_bb<Up>(shift_bb<Up>(b & TRank2BB) & ~pos.pieces()) & ~(shift_bb<Left>(epDefenders) | shift_bb<Right>(epDefenders)));
 
     b &=  ~pos.pieces()
         & ~ei.attackedBy[Them][PAWN]
-        & ~(shift_bb<Left>(epDefenders) | shift_bb<Right>(epDefenders))
         & (ei.attackedBy[Us][ALL_PIECES] | ~ei.attackedBy[Them][ALL_PIECES]);
     
     if (b)
