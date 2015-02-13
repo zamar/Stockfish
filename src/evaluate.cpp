@@ -497,14 +497,17 @@ namespace {
     const Color Them        = (Us == WHITE ? BLACK    : WHITE);
     const Square Up         = (Us == WHITE ? DELTA_N  : DELTA_S);
     const Square LeftUp     = (Us == WHITE ? DELTA_NW : DELTA_SE);
+    const Square Left       = (Us == WHITE ? DELTA_W  : DELTA_E);
     const Square RightUp    = (Us == WHITE ? DELTA_NE : DELTA_SW);
+    const Square Right      = (Us == WHITE ? DELTA_E  : DELTA_W);
     const Bitboard TRank2BB = (Us == WHITE ? Rank2BB  : Rank7BB);
+    const Bitboard TRank4BB = (Us == WHITE ? Rank4BB  : Rank5BB);
     const Bitboard TRank7BB = (Us == WHITE ? Rank7BB  : Rank2BB);
 
     enum { Defended, Weak };
     enum { Minor, Major };
 
-    Bitboard b, weak, defended;
+    Bitboard b, weak, defended, epDefenders;
     Score score = SCORE_ZERO;
 
     // Non-pawn enemies defended by a pawn
@@ -549,11 +552,14 @@ namespace {
     }
 
     // Add a small bonus for safe pawn pushes
+    epDefenders = pos.pieces(Them, PAWN) & TRank4BB;
+
     b = pos.pieces(Us, PAWN) & ~TRank7BB;
     b = shift_bb<Up>(b | (shift_bb<Up>(b & TRank2BB) & ~pos.pieces()));
 
     b &=  ~pos.pieces()
         & ~ei.attackedBy[Them][PAWN]
+        & ~(shift_bb<Left>(epDefenders) | shift_bb<Right>(epDefenders))
         & (ei.attackedBy[Us][ALL_PIECES] | ~ei.attackedBy[Them][ALL_PIECES]);
     
     if (b)
