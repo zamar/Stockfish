@@ -552,9 +552,7 @@ namespace {
     b = pos.pieces(Us, PAWN) & ~TRank7BB;
     b = shift_bb<Up>(b | (shift_bb<Up>(b & TRank2BB) & ~pos.pieces()));
 
-    b &=  ~pos.pieces()
-        & ~ei.attackedBy[Them][PAWN]
-        & (ei.attackedBy[Us][ALL_PIECES] | ~ei.attackedBy[Them][ALL_PIECES]);
+    b &= ~pos.pieces() & ~ei.attackedBy[Them][PAWN];
     
     if (b)
         score += popcount<Full>(b) * PawnSafePush;
