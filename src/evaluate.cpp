@@ -496,8 +496,10 @@ namespace {
 
     const Color Them        = (Us == WHITE ? BLACK    : WHITE);
     const Square Up         = (Us == WHITE ? DELTA_N  : DELTA_S);
-    const Square Left       = (Us == WHITE ? DELTA_NW : DELTA_SE);
-    const Square Right      = (Us == WHITE ? DELTA_NE : DELTA_SW);
+    const Square LeftUp       = (Us == WHITE ? DELTA_NW : DELTA_SE);
+    const Square RightUp      = (Us == WHITE ? DELTA_NE : DELTA_SW);
+    const Square LeftDown     = (Us == WHITE ? DELTA_SW : DELTA_NE);
+    const Square RightDown    = (Us == WHITE ? DELTA_SE : DELTA_NW);
     const Bitboard TRank2BB = (Us == WHITE ? Rank2BB  : Rank7BB);
     const Bitboard TRank7BB = (Us == WHITE ? Rank7BB  : Rank2BB);
 
@@ -549,18 +551,24 @@ namespace {
     }
 
     // Add a small bonus for safe pawn pushes
-    b = pos.pieces(Us, PAWN) & ~TRank7BB;
-    b = shift_bb<Up>(b | (shift_bb<Up>(b & TRank2BB) & ~pos.pieces()));
+    Bitboard ourPawns   = pos.pieces(Us, PAWN);
+    Bitboard ourBinds   = shift_bb<RightUp>(ourPawns) & shift_bb<LeftUp>(ourPawns);
+    Bitboard theirPawns = pos.pieces(Them, PAWN);
+    Bitboard theirBinds = shift_bb<RightDown>(theirPawns) & shift_bb<LeftDown>(theirPawns);
 
-    b &=  ~pos.pieces()
-        & ~ei.attackedBy[Them][PAWN]
-        & (ei.attackedBy[Us][ALL_PIECES] | ~ei.attackedBy[Them][ALL_PIECES]);
+    b = ourPawns & ~TRank7BB;
+    b = shift_bb<Up>(b | (shift_bb<Up>(b & TRank2BB) & ~pos.pieces())); // Initial mobility area
+
+    b &= ~pos.pieces(); // Remove blocked squares
+    b &= ~(theirBinds & ~ourBinds); // Remove squares attacked twice by opponent's pawns (unless we also attack them twice)
+    b &= ~(ei.attackedBy[Them][PAWN] & ~ei.attackedBy[Us][PAWN]); // Remove squares attacked by opponent pawns (unless our pawns also attack them)
+    b &= ~(ei.attackedBy[Them][ALL_PIECES] & ~ei.attackedBy[Us][ALL_PIECES]); // Remove squares attacked by opponent piceces (unless our pieces also attack them)
     
     if (b)
         score += popcount<Full>(b) * PawnSafePush;
 
     // Add another bonus if the pawn push attacks an enemy piece
-    b =  (shift_bb<Left>(b) | shift_bb<Right>(b))
+    b =  (shift_bb<LeftUp>(b) | shift_bb<RightUp>(b))
        &  pos.pieces(Them)
        & ~ei.attackedBy[Us][PAWN];
 
