@@ -768,6 +768,12 @@ namespace {
         score += apply_weight(s, Weights[Space]);
     }
 
+    // Extra space eval try by Lyudmil
+    const Bitboard WHITE_SIDE = Rank1BB | Rank2BB | Rank3BB | Rank4BB;
+    const Bitboard BLACK_SIDE = Rank5BB | Rank6BB | Rank7BB | Rank8BB;
+
+    score += (popcount<Full>(WHITE_SIDE & ~pos.pieces()) - popcount<Full>(BLACK_SIDE & ~pos.pieces())) * make_score(5, 5);
+
     // Scale winning side if position is more drawish than it appears
     Color strongSide = eg_value(score) > VALUE_DRAW ? WHITE : BLACK;
     ScaleFactor sf = ei.mi->scale_factor(pos, strongSide);
