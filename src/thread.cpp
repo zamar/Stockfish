@@ -329,6 +329,30 @@ void ThreadPool::read_uci_options() {
       delete_thread(back());
       pop_back();
   }
+
+  // Init random order thread rings
+  PRNG rng(1070372);
+  size_t source[MAX_THREADS], i;
+
+  for (size_t ring = 0; ring < size(); ring++)
+  {
+      for (i = 0; i < size(); i++)
+          source[i] = i;
+
+      size_t curr = 0;
+      size_t last = size() - 1;
+
+      ThreadRings[ring][curr++] = ring;
+      std::swap(source[ring], source[last--]);
+
+      while (curr < size())
+      {
+          i = rng.rand<uint64_t>() % (last + 1);
+
+          ThreadRings[ring][curr++] = source[i];
+          std::swap(source[i], source[last--]);
+      }
+  }
 }
 
 

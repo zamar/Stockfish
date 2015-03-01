@@ -180,6 +180,8 @@ struct ThreadPool : public std::vector<Thread*> {
   Mutex mutex;
   ConditionVariable sleepCondition;
   TimerThread* timer;
+
+  size_t ThreadRings[MAX_THREADS][MAX_THREADS];
 };
 
 extern ThreadPool Threads;
