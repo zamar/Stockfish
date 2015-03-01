@@ -1592,8 +1592,10 @@ void Thread::idle_loop() {
           SplitPoint* bestSp = NULL;
           int bestScore = INT_MAX;
 
-          for (size_t i = 0; i < Threads.size(); ++i)
+          for (size_t j = 1; j < Threads.size(); ++j)
           {
+              int i = Threads.thread_idx(idx, j);
+
               const size_t size = Threads[i]->splitPointsSize; // Local copy
               sp = size ? &Threads[i]->splitPoints[size - 1] : NULL;
 

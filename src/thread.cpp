@@ -361,9 +361,11 @@ void ThreadPool::read_uci_options() {
 
 Thread* ThreadPool::available_slave(const SplitPoint* sp) const {
 
-  for (const_iterator it = begin(); it != end(); ++it)
-      if ((*it)->available_to(sp))
-          return *it;
+  int ring = sp->master->idx;
+
+  for (size_t i = 1; i < size(); i++)
+      if (at(thread_idx(ring, i))->available_to(sp))
+          return at(thread_idx(ring, i));
 
   return NULL;
 }

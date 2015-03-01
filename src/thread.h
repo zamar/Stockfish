@@ -175,6 +175,7 @@ struct ThreadPool : public std::vector<Thread*> {
   Thread* available_slave(const SplitPoint* sp) const;
   void wait_for_think_finished();
   void start_thinking(const Position&, const Search::LimitsType&, Search::StateStackPtr&);
+  size_t thread_idx(int ring, int idx) const { return ThreadRings[ring][idx]; }
 
   Depth minimumSplitDepth;
   Mutex mutex;
