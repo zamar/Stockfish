@@ -117,7 +117,7 @@ bool Thread::cutoff_occurred() const {
 // which are busy searching the split point at the top of slave's split point
 // stack (the "helpful master concept" in YBWC terminology).
 
-bool Thread::available_to(const SplitPoint* sp) const {
+bool Thread::available_to(SplitPoint* sp) const {
 
   if (searching)
       return false;
@@ -128,7 +128,19 @@ bool Thread::available_to(const SplitPoint* sp) const {
 
   // No split points means that the thread is available as a slave for any
   // other thread otherwise apply the "helpful master" concept if possible.
-  return !size || splitPoints[size - 1].slavesMask.test(sp->master->idx);
+  if (!size) 
+      return true;
+
+  // Apply "helpful master concept"
+  const SplitPoint* top = &splitPoints[size - 1];
+
+  while ((sp = sp->parentSplitPoint))
+  {
+      if (sp == top)
+          return true;
+  }
+
+  return false;
 }
 
 
@@ -335,7 +347,7 @@ void ThreadPool::read_uci_options() {
 // ThreadPool::available_slave() tries to find an idle thread which is available
 // as a slave for the thread 'master'.
 
-Thread* ThreadPool::available_slave(const SplitPoint* sp) const {
+Thread* ThreadPool::available_slave(SplitPoint* sp) const {
 
   for (const_iterator it = begin(); it != end(); ++it)
       if ((*it)->available_to(sp))
