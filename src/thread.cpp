@@ -180,7 +180,7 @@ void Thread::split(Position& pos, Stack* ss, Value alpha, Value beta, Value* bes
   Thread* slave;
 
   while (    sp.slavesMask.count() < MAX_SLAVES_PER_SPLITPOINT
-         && (slave = Threads.available_slave(activeSplitPoint)) != NULL)
+         && (slave = Threads.available_slave(&sp)) != NULL)
   {
      slave->mutex.lock();
 
