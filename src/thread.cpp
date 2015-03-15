@@ -61,7 +61,7 @@ namespace {
 
 void ThreadBase::notify_one() {
 
-  std::unique_lock<Mutex>(this->mutex);
+  std::unique_lock<std::mutex>(this->mutex);
   sleepCondition.notify_one();
 }
 
@@ -70,7 +70,7 @@ void ThreadBase::notify_one() {
 
 void ThreadBase::wait_for(volatile const bool& condition) {
 
-  std::unique_lock<Mutex> lk(mutex);
+  std::unique_lock<std::mutex> lk(mutex);
   sleepCondition.wait(lk, [&]{ return condition; });
 }
 
@@ -225,7 +225,7 @@ void TimerThread::idle_loop() {
 
   while (!exit)
   {
-      std::unique_lock<Mutex> lk(mutex);
+      std::unique_lock<std::mutex> lk(mutex);
 
       if (!exit)
           sleepCondition.wait_for(lk, std::chrono::milliseconds(run ? Resolution : INT_MAX));
@@ -245,7 +245,7 @@ void MainThread::idle_loop() {
 
   while (!exit)
   {
-      std::unique_lock<Mutex> lk(mutex);
+      std::unique_lock<std::mutex> lk(mutex);
 
       thinking = false;
 
@@ -341,7 +341,7 @@ Thread* ThreadPool::available_slave(const SplitPoint* sp) const {
 
 void ThreadPool::wait_for_think_finished() {
 
-  std::unique_lock<Mutex> lk(main()->mutex);
+  std::unique_lock<std::mutex> lk(main()->mutex);
   sleepCondition.wait(lk, [&]{ return !main()->thinking; });
 }
 

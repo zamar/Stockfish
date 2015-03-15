@@ -1606,7 +1606,7 @@ void Thread::idle_loop() {
           if (   !this_sp 
               && !Threads.main()->thinking)
           {
-              std::unique_lock<Mutex> lk(mutex);
+              std::unique_lock<std::mutex> lk(mutex);
               while (!exit && !Threads.main()->thinking)
                     sleepCondition.wait(lk);
           }
