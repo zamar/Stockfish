@@ -118,8 +118,20 @@ bool Thread::can_join(const SplitPoint* sp) const {
   const size_t size = splitPointsSize;
 
   // No split points means that the thread is available as a slave for any
-  // other thread otherwise apply the "helpful master" concept if possible.
-  return !size || splitPoints[size - 1].slavesMask.test(sp->master->idx);
+  // other thread.
+  if (!size)
+      return true;
+
+  // Otherwise apply the "helpful master" concept.
+  const SplitPoint* top = &splitPoints[size - 1];
+ 
+  while ((sp = sp->parentSplitPoint) != nullptr)
+  {
+      if (sp == top)
+          return true;
+  }
+ 
+  return false;
 }
 
 
