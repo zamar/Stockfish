@@ -1673,7 +1673,6 @@ void Thread::idle_loop() {
 
               if (   sp
                   && sp->allSlavesSearching
-                  && sp->slavesMask.count() < MAX_SLAVES_PER_SPLITPOINT
                   && can_join(sp))
               {
                   assert(this != th);
@@ -1701,8 +1700,7 @@ void Thread::idle_loop() {
               // Recheck the conditions under lock protection
               sp->mutex.lock();
 
-              if (   sp->allSlavesSearching
-                  && sp->slavesMask.count() < MAX_SLAVES_PER_SPLITPOINT)
+              if (sp->allSlavesSearching)
               {
                   allocMutex.lock();
 
