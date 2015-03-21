@@ -1715,7 +1715,7 @@ void Thread::idle_loop() {
               sleepCondition.wait(lk);
       }
       else
-          std::this_thread::yield(); // Wait for a new job or for our slaves to finish
+      {}
   }
 }
 
