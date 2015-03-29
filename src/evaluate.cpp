@@ -512,7 +512,7 @@ namespace {
 
         // Unsafe pawn threats
         if (unsafe_pawn_threats)
-            score += ThreatenedByHangingPawn;
+            score += ThreatenedByHangingPawn * popcount<Full>(unsafe_pawn_threats);
 
         // Evaluate safe pawn threats
         while (safe_pawn_threats)
