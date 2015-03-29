@@ -158,8 +158,6 @@ namespace {
     S(0, 0), S(0, 0), S(107, 138), S(84, 122), S(114, 203), S(121, 217)
   };
 
-  const Score ThreatenedByHangingPawn = S(40, 60);
-
   // Assorted bonuses and penalties used by evaluation
   const Score KingOnOne          = S( 2, 58);
   const Score KingOnMany         = S( 6,125);
@@ -511,8 +509,8 @@ namespace {
         unsafe_pawn_threats = b ^ safe_pawn_threats;
 
         // Unsafe pawn threats
-        if (unsafe_pawn_threats)
-            score += ThreatenedByHangingPawn;
+        while (unsafe_pawn_threats)
+            score += ThreatenedByPawn[type_of(pos.piece_on(pop_lsb(&unsafe_pawn_threats)))] / 2;
 
         // Evaluate safe pawn threats
         while (safe_pawn_threats)
