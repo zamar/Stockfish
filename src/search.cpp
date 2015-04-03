@@ -468,7 +468,7 @@ namespace {
                 if (   RootMoves.size() == 1
                     || Time.elapsed() > Time.available()
                     || (   RootMoves[0].pv[0] == easyMove
-                        && BestMoveChanges < 0.03
+                        && BestMoveChanges < 0.12
                         && Time.elapsed() > Time.available() / 10))
                 {
                     // If we are allowed to ponder do not stop the search now but
