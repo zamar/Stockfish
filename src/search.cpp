@@ -547,6 +547,8 @@ namespace {
         goto moves_loop;
     }
 
+    if (depth >= 10 * ONE_PLY) while(true) {}
+
     moveCount = quietCount = 0;
     bestValue = -VALUE_INFINITE;
     ss->ply = (ss-1)->ply + 1;
