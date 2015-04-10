@@ -599,7 +599,7 @@ namespace {
         ss->currentMove = ttMove; // Can be MOVE_NONE
 
         // If ttMove is quiet, update killers, history, counter move on TT hit
-        if (ttValue >= beta && ttMove && !pos.capture_or_promotion(ttMove))
+        if (ttValue >= beta && ttMove)
             update_stats(pos, ss, ttMove, depth, nullptr, 0);
 
         return ttValue;
@@ -1147,7 +1147,7 @@ moves_loop: // When in check and at SpNode search starts from here
                    :     inCheck ? mated_in(ss->ply) : DrawValue[pos.side_to_move()];
 
     // Quiet best move: update killers, history and countermoves
-    else if (bestMove != MOVE_NONE && !pos.capture_or_promotion(bestMove))
+    else if (bestMove != MOVE_NONE)
         update_stats(pos, ss, bestMove, depth, quietsSearched, quietCount);
 
     tte->save(posKey, value_to_tt(bestValue, ss->ply),
@@ -1405,9 +1405,25 @@ moves_loop: // When in check and at SpNode search starts from here
     *pv = MOVE_NONE;
   }
 
-  // update_stats() updates killers, history, countermove history and countermoves stats for a quiet best move.
+  // update_stats() updates killers, history, countermove history and countermoves stats.
 
   void update_stats(const Position& pos, Stack* ss, Move move, Depth depth, Move* quiets, int quietsCnt) {
+
+    Square prevSq = to_sq((ss-1)->currentMove);
+    HistoryStats& cmh = CounterMovesHistory[pos.piece_on(prevSq)][prevSq];
+
+    Value bonus = Value((depth / ONE_PLY) * (depth / ONE_PLY));
+
+    // Decrease all played and failed quiet moves
+    for (int i = 0; i < quietsCnt; ++i)
+    {
+        History.update(pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
+
+        if (is_ok((ss-1)->currentMove))
+            cmh.update(pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
+    }
+
+    if (!pos.capture_or_promotion(move)) return;
 
     if (ss->killers[0] != move)
     {
@@ -1415,26 +1431,12 @@ moves_loop: // When in check and at SpNode search starts from here
         ss->killers[0] = move;
     }
 
-    Value bonus = Value((depth / ONE_PLY) * (depth / ONE_PLY));
-
-    Square prevSq = to_sq((ss-1)->currentMove);
-    HistoryStats& cmh = CounterMovesHistory[pos.piece_on(prevSq)][prevSq];
-
     History.update(pos.moved_piece(move), to_sq(move), bonus);
 
     if (is_ok((ss-1)->currentMove))
     {
         Countermoves.update(pos.piece_on(prevSq), prevSq, move);
         cmh.update(pos.moved_piece(move), to_sq(move), bonus);
-    }
-
-    // Decrease all the other played quiet moves
-    for (int i = 0; i < quietsCnt; ++i)
-    {
-        History.update(pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
-
-        if (is_ok((ss-1)->currentMove))
-            cmh.update(pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
     }
 
     // Extra penalty for TT move in previous ply when it gets refuted
