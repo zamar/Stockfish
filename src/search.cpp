@@ -1423,7 +1423,7 @@ moves_loop: // When in check and at SpNode search starts from here
             cmh.update(pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
     }
 
-    if (!pos.capture_or_promotion(move)) return;
+    if (pos.capture_or_promotion(move)) return;
 
     if (ss->killers[0] != move)
     {
