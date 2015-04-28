@@ -58,6 +58,13 @@ namespace {
       return *begin;
   }
 
+  ExtMove pick_best_ext(ExtMove* begin, ExtMove* end)
+  {
+      std::swap(*begin, *std::max_element(begin, end));
+      return *begin;
+  }
+
+
 } // namespace
 
 
@@ -261,6 +268,7 @@ template<>
 Move MovePicker::next_move<false>() {
 
   Move move;
+  ExtMove em;
 
   while (true)
   {
@@ -274,14 +282,14 @@ Move MovePicker::next_move<false>() {
           return ttMove;
 
       case CAPTURES_S1:
-          move = pick_best(cur++, endMoves);
-          if (move != ttMove)
+          em = pick_best_ext(cur++, endMoves);
+          if (em.move != ttMove)
           {
-              if (pos.see_sign(move) >= VALUE_ZERO)
-                  return move;
+              if (em.value >= VALUE_ZERO)
+                  return em.move;
 
               // Losing capture, move it to the tail of the array
-              *endBadCaptures-- = move;
+              *endBadCaptures-- = em.move;
           }
           break;
 
