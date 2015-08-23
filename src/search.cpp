@@ -131,7 +131,6 @@ namespace {
   size_t PVIdx;
   EasyMoveManager EasyMove;
   double BestMoveChanges;
-  Value DrawValue[COLOR_NB];
   HistoryStats History;
   CounterMovesHistoryStats CounterMovesHistory;
   MovesStats Countermoves;
@@ -231,8 +230,7 @@ void Search::think() {
   Time.init(Limits, us, RootPos.game_ply(), now());
 
   int contempt = Options["Contempt"] * PawnValueEg / 100; // From centipawns
-  DrawValue[ us] = VALUE_DRAW - Value(contempt);
-  DrawValue[~us] = VALUE_DRAW + Value(contempt);
+  Eval::set_contempt(Value(contempt * (us == WHITE ? 1 : -1)));
 
   TB::Hits = 0;
   TB::RootInTB = false;
@@ -565,7 +563,7 @@ namespace {
     {
         // Step 2. Check for aborted search and immediate draw
         if (Signals.stop || pos.is_draw() || ss->ply >= MAX_PLY)
-            return ss->ply >= MAX_PLY && !inCheck ? evaluate(pos) : DrawValue[pos.side_to_move()];
+            return ss->ply >= MAX_PLY && !inCheck ? evaluate(pos) : VALUE_DRAW;
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -1127,7 +1125,7 @@ moves_loop: // When in check and at SpNode search starts from here
     // return a fail low score.
     if (!moveCount)
         bestValue = excludedMove ? alpha
-                   :     inCheck ? mated_in(ss->ply) : DrawValue[pos.side_to_move()];
+                   :     inCheck ? mated_in(ss->ply) : VALUE_DRAW;
 
     // Quiet best move: update killers, history and countermoves
     else if (bestMove && !pos.capture_or_promotion(bestMove))
@@ -1180,7 +1178,7 @@ moves_loop: // When in check and at SpNode search starts from here
 
     // Check for an instant draw or if the maximum ply has been reached
     if (pos.is_draw() || ss->ply >= MAX_PLY)
-        return ss->ply >= MAX_PLY && !InCheck ? evaluate(pos) : DrawValue[pos.side_to_move()];
+        return ss->ply >= MAX_PLY && !InCheck ? evaluate(pos) : VALUE_DRAW;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 

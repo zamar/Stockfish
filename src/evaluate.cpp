@@ -191,6 +191,9 @@ namespace {
   // index to KingDanger[].
   Score KingDanger[512];
 
+  // Contempt value from white's perspective. Scaled based on game phase.
+  Value Contempt;
+
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   const int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 7, 5, 4, 1 };
 
@@ -779,7 +782,8 @@ namespace {
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
     Value v =  mg_value(score) * int(ei.mi->game_phase())
-             + eg_value(score) * int(PHASE_MIDGAME - ei.mi->game_phase()) * sf / SCALE_FACTOR_NORMAL;
+             + eg_value(score) * int(PHASE_MIDGAME - ei.mi->game_phase()) * sf / SCALE_FACTOR_NORMAL
+             + Contempt * int(ei.mi->game_phase());
 
     v /= int(PHASE_MIDGAME);
 
@@ -894,6 +898,12 @@ namespace Eval {
         t = std::min(Peak, std::min(i * i * 27, t + MaxSlope));
         KingDanger[i] = make_score(t / 1000, 0) * Weights[KingSafety];
     }
+  }
+
+  // set_contempt() is called in the beginning of think().
+  // It sets the contempt value from white's perspective.
+  void set_contempt(Value v) {
+      Contempt = v;
   }
 
 } // namespace Eval
