@@ -42,7 +42,7 @@ void init_movepick()
 }
 
 int factor(int index) { return Factor[index]; }
-int sum(int index) { return Sum[index]; }
+int sum(int index) { return Sum[index - 1]; }
 
 namespace {
 
