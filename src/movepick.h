@@ -28,6 +28,8 @@
 #include "search.h"
 #include "types.h"
 
+extern int factor(int index);
+extern int sum(int index);
 
 /// The Stats struct stores moves statistics. According to the template parameter
 /// the class can store History and Countermoves. History records how often
@@ -53,8 +55,15 @@ struct Stats {
 
   void update(Piece pc, Square to, Value v) {
 
-    table[pc][to] -= table[pc][to] * std::min(abs(int(v)), 512) / 512;
-    table[pc][to] += int(v) * 64;
+    table[pc][to] = Value((int64_t(table[pc][to]) * factor(v)) / 0x10000);  
+
+    // HACK
+    int value = v;
+    int sign = 1;
+
+    if (v < 0) { value *= -1; sign *= -1; }
+
+    table[pc][to] += sign * Value(int64_t(sum(value)) * 64 / 0x10000);
   }
 
 private:

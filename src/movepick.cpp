@@ -23,6 +23,27 @@
 #include "movepick.h"
 #include "thread.h"
 
+const int Unit = 0x10000;
+const int Decay = 512;
+
+int Factor[256 * 256];
+int Sum[256 * 256];
+
+void init_movepick()
+{
+    Factor[0] = Unit;
+    Sum[0]    = Unit;
+
+    for (int i = 1; i < 256 * 256; i++)
+    {
+        Factor[i] = Factor[i - 1] * (Decay - 1) / Decay;
+        Sum[i] = Sum[i - 1] + Factor[i];
+    }
+}
+
+int factor(int index) { return Factor[index]; }
+int sum(int index) { return Sum[index]; }
+
 namespace {
 
   enum Stages {
