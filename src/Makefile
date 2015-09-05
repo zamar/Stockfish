@@ -62,7 +62,7 @@ OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
 
 ### 2.1. General and architecture defaults
 optimize = yes
-debug = no
+debug = yes
 bits = 32
 prefetch = no
 bsfq = no

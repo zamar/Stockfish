@@ -1656,8 +1656,6 @@ void Thread::idle_loop() {
                   && can_join(sp))
               {
                   assert(this != th);
-                  assert(!(this_sp && this_sp->slavesMask.none()));
-                  assert(Threads.size() > 2);
 
                   // Prefer to join to SP with few parents to reduce the probability
                   // that a cut-off occurs above us, and hence we waste our work.
@@ -1687,6 +1685,9 @@ void Thread::idle_loop() {
 
                   if (can_join(sp))
                   {
+                      assert(!(this_sp && this_sp->slavesMask.none()));
+                      assert(Threads.size() > 2);
+
                       sp->slavesMask.set(idx);
                       activeSplitPoint = sp;
                       searching = true;
