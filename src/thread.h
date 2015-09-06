@@ -125,6 +125,9 @@ struct Thread : public ThreadBase {
   Position* activePosition;
   size_t idx;
   int maxPly;
+
+  // Secure access (RW) for the following variables only when the thread specific spinlock is locked.
+  // Speculative/delayed access (RO) also without a lock.
   SplitPoint* volatile activeSplitPoint;
   volatile size_t splitPointsSize;
   volatile bool searching;

@@ -1627,6 +1627,8 @@ void Thread::idle_loop() {
           else
               assert(false);
 
+          spinlock.acquire();
+          
           assert(searching);
 
           searching = false;
@@ -1638,6 +1640,7 @@ void Thread::idle_loop() {
           // After releasing the lock we can't access any SplitPoint related data
           // in a safe way because it could have been released under our feet by
           // the sp master.
+          spinlock.release();
           sp->spinlock.release();
 
           // Try to late join to another split point if none of its slaves has
