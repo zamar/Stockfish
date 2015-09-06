@@ -23,6 +23,7 @@
 #include <atomic>
 #include <bitset>
 #include <condition_variable>
+#include <iostream>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -149,6 +150,12 @@ struct TimerThread : public ThreadBase {
   bool run = false;
 };
 
+struct DumpThread : public ThreadBase {
+
+  static const int SleepInterval = 60;  
+
+  virtual void idle_loop();
+};
 
 /// ThreadPool struct handles all the threads related stuff like init, starting,
 /// parking and, most importantly, launching a slave thread at a split point.
@@ -159,6 +166,8 @@ struct ThreadPool : public std::vector<Thread*> {
   void init(); // No c'tor and d'tor, threads rely on globals that should be
   void exit(); // initialized and are valid during the whole thread lifetime.
 
+  void dump_split_points();
+
   MainThread* main() { return static_cast<MainThread*>(at(0)); }
   void read_uci_options();
   Thread* available_slave(const SplitPoint* sp) const;
@@ -166,6 +175,7 @@ struct ThreadPool : public std::vector<Thread*> {
   size_t  max_slaves_per_splitpoint(Depth depth);
   Depth minimumSplitDepth;
   TimerThread* timer;
+  DumpThread* dumper;
 };
 
 extern ThreadPool Threads;

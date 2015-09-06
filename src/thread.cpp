@@ -19,6 +19,7 @@
 
 #include <algorithm> // For std::count
 #include <cassert>
+#include <fstream>
 
 #include "movegen.h"
 #include "search.h"
@@ -78,7 +79,7 @@ void ThreadBase::wait_for(volatile const bool& condition) {
 // Thread c'tor makes some init but does not launch any execution thread that
 // will be started only when c'tor returns.
 
-Thread::Thread() /* : splitPoints() */ { // Initialization of non POD broken in MSVC
+Thread::Thread() /*: splitPoints() */ { // Initialization of non POD broken in MSVC
 
   searching = false;
   maxPly = 0;
@@ -237,6 +238,17 @@ void TimerThread::idle_loop() {
   }
 }
 
+void DumpThread::idle_loop() {
+
+  while (!exit)
+  {
+      std::this_thread::sleep_for(std::chrono::seconds(SleepInterval));
+      Threads.dump_split_points();
+  }
+}
+
+
+
 
 // MainThread::idle_loop() is where the main thread is parked waiting to be started
 // when there is a new search. The main thread will launch all the slave threads.
@@ -288,6 +300,7 @@ void MainThread::join() {
 void ThreadPool::init() {
 
   timer = new_thread<TimerThread>();
+  dumper = new_thread<DumpThread>();
   push_back(new_thread<MainThread>());
   read_uci_options();
 }
@@ -336,6 +349,42 @@ void ThreadPool::read_uci_options() {
       delete_thread(back());
       pop_back();
   }
+}
+
+void ThreadPool::dump_split_points() {
+
+    std::ofstream myfile;
+    myfile.open ("dump.log", std::ios::out | std::ios::app); 
+
+    for (unsigned i = 0; i < size(); i++)
+    {
+        myfile<<"Thread " << i << ":\n";
+        myfile<<"Active SplitPoints: " << at(i)->splitPointsSize << "\n";
+        myfile<<"\n";
+
+        for (unsigned j = 0; j < MAX_SPLITPOINTS_PER_THREAD; j++)
+        {
+            SplitPoint *sp = &at(i)->splitPoints[j];
+
+            myfile<<"Splitpoint (" << i << ", " << j << "):\n";
+
+            myfile<<"address: " << sp << "\n";
+            myfile<<"master : " << (sp->master ? int(sp->master->idx) : -1) << "\n";
+            myfile<<"depth  : " << sp->depth << "\n";
+            myfile<<"parent : " << sp->parentSplitPoint << "\n";
+
+            myfile<<"slaves : ";
+            for (unsigned k = 0; k < size(); k++)
+                myfile << (sp->slavesMask.test(k) ? "1" : "0");
+            myfile<<"\n";
+
+            myfile<<"allSlavesSearching: " << sp->allSlavesSearching <<"\n";
+            myfile<<"cutoff : " << sp->cutoff <<"\n";
+            myfile<<"\n";
+        }
+    }
+
+    myfile.close();
 }
 
 
