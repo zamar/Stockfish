@@ -102,4 +102,18 @@ inline int popcount<CNT_HW_POPCNT>(Bitboard b) {
 #endif
 }
 
+class MyBitSet
+{
+    private:
+        volatile Bitboard b = 0ULL;
+
+    public:
+        inline void clear()             { b = 0ULL; }
+        inline void set(int idx)        { b |=  (1ULL << idx); }
+        inline void reset(int idx)      { b &= ~(1ULL << idx); }
+        inline bool test(int idx) const { return b & (1ULL << idx); }
+        inline unsigned count() const   { return popcount<Full>(b); }
+        inline bool none() const        { return b == 0ULL; }
+};
+
 #endif // #ifndef BITCOUNT_H_INCLUDED

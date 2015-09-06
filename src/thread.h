@@ -27,6 +27,7 @@
 #include <thread>
 #include <vector>
 
+#include "bitcount.h"
 #include "material.h"
 #include "movepick.h"
 #include "pawns.h"
@@ -36,7 +37,7 @@
 
 struct Thread;
 
-const size_t MAX_THREADS = 128;
+const size_t MAX_THREADS = 64;
 const size_t MAX_SPLITPOINTS_PER_THREAD = 8;
 const int    MAX_SLAVES_PER_SPLITPOINT = 7;
 
@@ -75,7 +76,7 @@ struct SplitPoint {
 
   // Shared variable data
   Spinlock spinlock;
-  std::bitset<MAX_THREADS> slavesMask;
+  MyBitSet slavesMask;
   volatile bool allSlavesSearching;
   volatile uint64_t nodes;
   volatile Value alpha;
