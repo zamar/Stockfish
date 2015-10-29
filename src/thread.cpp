@@ -105,13 +105,16 @@ void TimerThread::idle_loop() {
   {
       std::unique_lock<Mutex> lk(mutex);
 
-      if (!exit)
-          sleepCondition.wait_for(lk, std::chrono::milliseconds(run ? Resolution : INT_MAX));
+      while (!exit && !run)
+          sleepCondition.wait(lk);
 
       lk.unlock();
 
       if (!exit && run)
+      {
           check_time();
+          upper_bound_sleep(Resolution);
+      }
   }
 }
 

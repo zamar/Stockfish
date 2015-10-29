@@ -20,6 +20,10 @@
 #ifndef MISC_H_INCLUDED
 #define MISC_H_INCLUDED
 
+#if defined(_WIN32)
+#  include <windows.h> // Sleep()
+#endif
+
 #include <cassert>
 #include <chrono>
 #include <ostream>
@@ -42,6 +46,19 @@ typedef std::chrono::milliseconds::rep TimePoint; // A value in milliseconds
 inline TimePoint now() {
   return std::chrono::duration_cast<std::chrono::milliseconds>
         (std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
+inline void upper_bound_sleep(int t)
+{
+#if defined(_WIN32)
+  Sleep(t);
+#else
+  struct timeval tv;
+  tv.tv_sec  =  t / 1000;
+  tv.tv_usec = (t % 1000) * 1000;
+
+  select(0, NULL, NULL, NULL, &tv);
+#endif
 }
 
 template<class Entry, int Size>
