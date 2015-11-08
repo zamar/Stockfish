@@ -62,7 +62,9 @@ namespace {
     for (int i = 1; i < movesToGo; ++i)
         otherMovesImportance += move_importance(ply + 2 * i);
 
-    double ratio1 = (TMaxRatio * moveImportance) / (TMaxRatio * moveImportance + otherMovesImportance);
+    double x = (TMaxRatio * moveImportance + otherMovesImportance) / (TMaxRatio * moveImportance);
+
+    double ratio1 = 1 / (x + (T == OptimumTime ? log(x) : 0.0));
     double ratio2 = (moveImportance + TStealRatio * otherMovesImportance) / (moveImportance + otherMovesImportance);
 
     return int(myTime * std::min(ratio1, ratio2)); // Intel C++ asks an explicit cast
